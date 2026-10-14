@@ -1,0 +1,145 @@
+@startuml prov_model
+!pragma layout smetana
+set separator none
+title .prov record model: the ISO 19115-3 lineage classes it uses, and the .prov additions
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam class {
+  BackgroundColor<<prov>> #FFF4D6
+  BorderColor<<prov>> #B8860B
+}
+hide empty methods
+hide <<prov>> circle
+
+package "mrl/lineage.xsd  (ISO 19115-1 classes)" {
+  class LI_Lineage {
+    statement : CharacterString [0..1]
+    scope [0..1]
+    additionalDocumentation : CI_Citation [0..*]
+  }
+  class LI_Source {
+    description : CharacterString [0..1]
+    sourceSpatialResolution [0..1]
+    sourceReferenceSystem [0..1]
+    sourceCitation : CI_Citation [0..1]
+    sourceMetadata : CI_Citation [0..*]
+    scope [0..1]
+  }
+  class LI_ProcessStep {
+    description : CharacterString [1]
+    rationale [0..1]
+    stepDateTime [0..1]
+    processor [0..*]
+    reference : CI_Citation [0..*]
+    scope [0..1]
+  }
+}
+
+package "mrl/lineageImagery.xsd  (ISO 19115-2 classes)" {
+  class LE_Source {
+    processedLevel : MD_Identifier [0..1]
+    resolution [0..1]
+  }
+  class LE_ProcessStep {
+    report [0..*]
+  }
+  class LE_Processing {
+    identifier : MD_Identifier [1]
+    softwareReference : CI_Citation [0..1]
+    procedureDescription [0..1]
+    documentation : CI_Citation [0..*]
+    runTimeParameters : CharacterString [0..1]
+    parameter [0..*] -- mrl 2.0 only
+  }
+  class LE_Algorithm {
+    citation : CI_Citation [1]
+    description : CharacterString [1]
+  }
+}
+
+package "cit/citation.xsd, mcc/commonClasses.xsd" {
+  class CI_Citation {
+    title [1]
+    edition [0..1]
+    identifier : MD_Identifier [0..*]
+    otherCitationDetails [0..*]
+    onlineResource [0..*]
+  }
+  class MD_Identifier {
+    code [1]
+    codeSpace [0..1]
+  }
+}
+
+package ".prov additions" {
+  class ProvRecord <<prov>> {
+    prov : format version
+  }
+  class View <<prov>> {
+    figure exports only
+    colormap, stretch, extent,
+    labels, DPI, ...
+  }
+}
+
+LI_Lineage "1" *-- "0..*" LI_Source : source
+LI_Lineage "1" *-- "0..*" LI_ProcessStep : processStep
+LI_ProcessStep --> "0..*" LI_Source : source
+LI_Source --> "0..*" LI_ProcessStep : sourceStep
+LI_Source <|-- LE_Source
+LI_ProcessStep <|-- LE_ProcessStep
+LE_ProcessStep --> "0..1" LE_Processing : processingInformation
+LE_ProcessStep --> "0..*" LE_Source : output
+LE_Processing --> "0..*" LE_Algorithm : algorithm
+LE_Algorithm --> CI_Citation : citation
+CI_Citation --> "0..*" MD_Identifier : identifier
+LI_Lineage <|-- ProvRecord
+ProvRecord *-- "0..1" View : view
+
+note right of LI_Source
+  Declared start: a source with no
+  sourceStep / sourceMetadata. sourceCitation
+  holds the file (name + sha256) or the paper.
+  A loaded fbm file starts here.
+end note
+
+note left of LI_ProcessStep
+  source is 0..*: a generator step
+  (RNG + seed -> spectral shaping ->
+  inverse FFT) has no source.
+end note
+
+note bottom of LE_ProcessStep
+  A threshold selection is a process step:
+  source = the object table (maxima lines),
+  runTimeParameters = the predicate
+  (e.g. min_len <= h_len <= max_len),
+  output = the kept subset.
+end note
+
+note right of LE_Processing
+  identifier = the in-code identifier
+  (e.g. dynamix.mz_edges/recon).
+  softwareReference.edition = git commit.
+  Uncommitted diff: saved beside the .prov,
+  cited by sha256 (attachment point open).
+  runTimeParameters = RFC 8785 JSON text.
+end note
+
+note bottom of LE_Algorithm
+  The backend is one LE_Algorithm entry
+  (FFTW / mlx / numpy FFT, version);
+  precision and FFTW planner mode
+  go in runTimeParameters.
+end note
+
+note right of CI_Citation
+  .prov field sha256; the ISO export writes
+  identifier {code: <hex>, codeSpace: sha256}.
+end note
+
+note bottom of View
+  Covered by the record hash.
+  ISO home: open.
+end note
+@enduml

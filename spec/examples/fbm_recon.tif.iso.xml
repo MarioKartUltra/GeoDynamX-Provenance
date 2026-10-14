@@ -1,0 +1,166 @@
+<mrl:LI_Lineage xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/2.0"
+    xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0" xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/2.0"
+    xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+  <mrl:statement><gco:CharacterString>LastWave reconstruction of the forked fBm window from its modulus maxima, exported to GeoTIFF.</gco:CharacterString></mrl:statement>
+  <mrl:additionalDocumentation>
+    <cit:CI_Citation>
+      <cit:title><gco:CharacterString>fbm_recon.tif.gprv.jsonl</gco:CharacterString></cit:title>
+      <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>a2fe1db326fbda57bc3e4d0ec068ece145e9db674e29d6b1b46a50288ea665a3</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+    </cit:CI_Citation>
+  </mrl:additionalDocumentation>
+  <mrl:source><mrl:LI_Source id="r8f51734f67ac.s1">
+    <mrl:description><gco:CharacterString>Declared start: synthetic 2-D fBm, H=0.7, 1024x1024, spectral synthesis, seed 42.</gco:CharacterString></mrl:description>
+    <mrl:sourceCitation>
+      <cit:CI_Citation>
+        <cit:title><gco:CharacterString>fbm_H0.7_1024.npz</gco:CharacterString></cit:title>
+        <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>c2b082442efa2a3869033fd252bf6da2c181bc03c7660010e488ffb6bba23db8</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+      </cit:CI_Citation>
+    </mrl:sourceCitation>
+  </mrl:LI_Source></mrl:source>
+  <mrl:source><mrl:LI_Source id="rab464d3337bb.s1">
+    <mrl:description><gco:CharacterString>The forked dataset fbm_roi.npz.</gco:CharacterString></mrl:description>
+    <mrl:sourceCitation>
+      <cit:CI_Citation>
+        <cit:title><gco:CharacterString>fbm_roi.npz</gco:CharacterString></cit:title>
+        <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>5ef928efdec603cb6df541fb750261950914c6077651e2be811285d0b4ee9991</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+      </cit:CI_Citation>
+    </mrl:sourceCitation>
+    <mrl:sourceMetadata>
+      <cit:CI_Citation>
+        <cit:title><gco:CharacterString>fbm_roi.npz.gprv</gco:CharacterString></cit:title>
+        <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>8f51734f67ac9486eb9bd40465c5bad006f023aeddead94c5c8132ddeabfd9c9</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+      </cit:CI_Citation>
+    </mrl:sourceMetadata>
+    <mrl:sourceStep xlink:href="#r8f51734f67ac.p2"/>
+  </mrl:LI_Source></mrl:source>
+  <mrl:processStep><mrl:LE_ProcessStep id="r8f51734f67ac.p1">
+    <mrl:description><gco:CharacterString>ROI window, 512x512 from (256, 256).</gco:CharacterString></mrl:description>
+    <mrl:source xlink:href="#r8f51734f67ac.s1"/>
+    <mrl:processingInformation><mrl:LE_Processing>
+      <mrl:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>roi/window</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></mrl:identifier>
+      <mrl:softwareReference>
+        <cit:CI_Citation id="r8f51734f67ac.gdx">
+          <cit:title><gco:CharacterString>GeoDynamix</gco:CharacterString></cit:title>
+          <cit:edition><gco:CharacterString>6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8</gco:CharacterString></cit:edition>
+          <cit:otherCitationDetails><gco:CharacterString>python 3.12.13</gco:CharacterString></cit:otherCitationDetails>
+          <cit:otherCitationDetails><gco:CharacterString>numpy 2.4.3</gco:CharacterString></cit:otherCitationDetails>
+          <cit:onlineResource><cit:CI_OnlineResource><cit:linkage><gco:CharacterString>https://github.com/MarioKartUltra/GeoDynamX</gco:CharacterString></cit:linkage></cit:CI_OnlineResource></cit:onlineResource>
+        </cit:CI_Citation>
+      </mrl:softwareReference>
+      <mrl:runTimeParameters><gco:CharacterString>{"height":512,"width":512,"x0":256,"y0":256}</gco:CharacterString></mrl:runTimeParameters>
+    </mrl:LE_Processing></mrl:processingInformation>
+    <mrl:output><mrl:LE_Source id="r8f51734f67ac.d1"/></mrl:output>
+  </mrl:LE_ProcessStep></mrl:processStep>
+  <mrl:processStep><mrl:LE_ProcessStep id="r8f51734f67ac.p2">
+    <mrl:description><gco:CharacterString>Fork: the window written as a derived dataset.</gco:CharacterString></mrl:description>
+    <mrl:stepDateTime><gml:TimeInstant gml:id="r8f51734f67ac.p2.t"><gml:timePosition>2026-10-01T16:05:12Z</gml:timePosition></gml:TimeInstant></mrl:stepDateTime>
+    <mrl:source xlink:href="#r8f51734f67ac.d1"/>
+    <mrl:processingInformation><mrl:LE_Processing>
+      <mrl:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>fork</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></mrl:identifier>
+      <mrl:softwareReference xlink:href="#r8f51734f67ac.gdx"/>
+      <mrl:runTimeParameters><gco:CharacterString>{"bands":["field"]}</gco:CharacterString></mrl:runTimeParameters>
+    </mrl:LE_Processing></mrl:processingInformation>
+    <mrl:output><mrl:LE_Source id="r8f51734f67ac.o1"><mrl:sourceCitation>
+      <cit:CI_Citation>
+        <cit:title><gco:CharacterString>fbm_roi.npz</gco:CharacterString></cit:title>
+        <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>5ef928efdec603cb6df541fb750261950914c6077651e2be811285d0b4ee9991</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+      </cit:CI_Citation>
+    </mrl:sourceCitation></mrl:LE_Source></mrl:output>
+  </mrl:LE_ProcessStep></mrl:processStep>
+  <mrl:processStep><mrl:LE_ProcessStep id="rab464d3337bb.p1">
+    <mrl:description><gco:CharacterString>Dyadic wavelet modulus maxima, LastWave dwtrans2d port, J=4, mirror border.</gco:CharacterString></mrl:description>
+    <mrl:source xlink:href="#rab464d3337bb.s1"/>
+    <mrl:processingInformation><mrl:LE_Processing>
+      <mrl:algorithm><mrl:LE_Algorithm id="rab464d3337bb.lw_bank">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>LastWave FIR bank</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_lastwave.fir_bank</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>FIR analysis/synthesis bank, bit for bit with LastWave convol2.c</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="rab464d3337bb.ext2">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>extrema2</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_lastwave.extrema2</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>10.1109/34.142909</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>doi</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>modulus maxima detection, LastWave extrema2</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_edges/edges</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></mrl:identifier>
+      <mrl:softwareReference>
+        <cit:CI_Citation id="rab464d3337bb.gdx">
+          <cit:title><gco:CharacterString>GeoDynamix</gco:CharacterString></cit:title>
+          <cit:edition><gco:CharacterString>6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8</gco:CharacterString></cit:edition>
+          <cit:otherCitationDetails><gco:CharacterString>python 3.12.13</gco:CharacterString></cit:otherCitationDetails>
+          <cit:otherCitationDetails><gco:CharacterString>numpy 2.4.3</gco:CharacterString></cit:otherCitationDetails>
+          <cit:onlineResource><cit:CI_OnlineResource><cit:linkage><gco:CharacterString>https://github.com/MarioKartUltra/GeoDynamX</gco:CharacterString></cit:linkage></cit:CI_OnlineResource></cit:onlineResource>
+        </cit:CI_Citation>
+      </mrl:softwareReference>
+      <mrl:runTimeParameters><gco:CharacterString>{"lw_bank":{"border":"mirror","n_levels":4}}</gco:CharacterString></mrl:runTimeParameters>
+    </mrl:LE_Processing></mrl:processingInformation>
+    <mrl:output><mrl:LE_Source id="rab464d3337bb.d1"/></mrl:output>
+  </mrl:LE_ProcessStep></mrl:processStep>
+  <mrl:processStep><mrl:LE_ProcessStep id="rab464d3337bb.p2">
+    <mrl:description><gco:CharacterString>Reconstruction from all maxima: LastWave alternating projections, run to convergence.</gco:CharacterString></mrl:description>
+    <mrl:source xlink:href="#rab464d3337bb.d1"/>
+    <mrl:processingInformation><mrl:LE_Processing>
+      <mrl:algorithm xlink:href="#rab464d3337bb.lw_bank"/>
+      <mrl:algorithm><mrl:LE_Algorithm id="rab464d3337bb.lw_proj">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>Alternating projections</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_lastwave.ext2_proj</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>alternating projections, LastWave ext2_proj.c</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="rab464d3337bb.w2">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>W2_interp</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_lastwave.w2_interp</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>P_Gamma: W2_interp sinh interpolation between anchors</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="rab464d3337bb.stop">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>Converge stop rule</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_lastwave.converge_stop</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>stop at relative change &lt; tolerance, residual rising 3 times running, or the cap</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_edges/recon</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></mrl:identifier>
+      <mrl:softwareReference xlink:href="#rab464d3337bb.gdx"/>
+      <mrl:runTimeParameters><gco:CharacterString>{"stop":{"iterations":20,"run_mode":"converge","tolerance":0.001},"w2":{"clip":false,"kappa":1}}</gco:CharacterString></mrl:runTimeParameters>
+    </mrl:LE_Processing></mrl:processingInformation>
+    <mrl:report><mrl:LE_ProcessStepReport>
+      <mrl:name><gco:CharacterString>outcome</gco:CharacterString></mrl:name>
+      <mrl:description><gco:CharacterString>{"lw_proj":{"residual":0.0097},"snr_db":29.1,"stop":{"iterations":12,"reason":"converged","returned":12}}</gco:CharacterString></mrl:description>
+    </mrl:LE_ProcessStepReport></mrl:report>
+    <mrl:output><mrl:LE_Source id="rab464d3337bb.d2"/></mrl:output>
+  </mrl:LE_ProcessStep></mrl:processStep>
+  <mrl:processStep><mrl:LE_ProcessStep id="rab464d3337bb.p3">
+    <mrl:description><gco:CharacterString>Export to GeoTIFF.</gco:CharacterString></mrl:description>
+    <mrl:stepDateTime><gml:TimeInstant gml:id="rab464d3337bb.p3.t"><gml:timePosition>2026-10-01T16:41:07Z</gml:timePosition></gml:TimeInstant></mrl:stepDateTime>
+    <mrl:source xlink:href="#rab464d3337bb.d2"/>
+    <mrl:processingInformation><mrl:LE_Processing>
+      <mrl:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>export/geotiff</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></mrl:identifier>
+      <mrl:softwareReference xlink:href="#rab464d3337bb.gdx"/>
+      <mrl:runTimeParameters><gco:CharacterString>{"compress":"deflate","dtype":"float32","nodata":"NaN"}</gco:CharacterString></mrl:runTimeParameters>
+    </mrl:LE_Processing></mrl:processingInformation>
+    <mrl:output><mrl:LE_Source id="rab464d3337bb.o1"><mrl:sourceCitation>
+      <cit:CI_Citation>
+        <cit:title><gco:CharacterString>fbm_recon.tif</gco:CharacterString></cit:title>
+        <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>981ea82a0b40bf14f4b13ae5cd1cdc7cdb80ebf635db362cbbb42c67f2c9e398</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+      </cit:CI_Citation>
+    </mrl:sourceCitation></mrl:LE_Source></mrl:output>
+  </mrl:LE_ProcessStep></mrl:processStep>
+</mrl:LI_Lineage>

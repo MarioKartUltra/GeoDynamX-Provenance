@@ -1,0 +1,108 @@
+@startuml geodynamix_mz_chain
+title One GeoDynamix export at algorithm grain: fbm -> M-Z maxima -> length threshold -> reconstruction -> file
+skinparam shadowing false
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam PartitionBorderColor #555555
+
+legend top left
+  Candidate step cuts (the granularity question):
+  G1  one step per chain device  (outer boxes: generator, noise, mz_edges, hline_length, export)
+  G2  one step per device output (boxes inside mz_edges: "edges", "recon"), GeoDynamix's output_key grain
+  G3  one step per algorithm     (every action box)
+  Arrow labels = the data that flows; each could be a hashed LE_Source.
+endlegend
+
+start
+if (input?) then (loaded file)
+  :declared start: fbm_H0.7_1024.npz
+  sourceCitation: name + sha256;
+else (generated)
+  partition "generator  [illustrative: GeoDynamix has no 2-D generator; xsmurf ibro steps unchecked]" {
+    :RNG
+    numpy default_rng(seed) = PCG64
+    (stream tied to numpy version, NEP 19);
+    -> white noise / random phases;
+    :spectral shaping = fractional integration
+    amplitude |k|^-(H + d/2);
+    -> spectrum;
+    :inverse FFT
+    backend: numpy FFT / FFTW / mlx;
+  }
+endif
+-> field;
+
+partition "noise  (optional chain step, devices/noise.py)" {
+  :seeded dither
+  dist, amplitude, seed, sign
+  default_rng(seed);
+}
+-> field;
+
+partition "mz_edges  (algorithm = lastwave)" {
+  partition "output: edges" {
+    :lw.analyze
+    dyadic M-Z transform + extrema2 edge detection
+    LastWave port, FIR convolutions bit for bit with convol2.c (no FFT)
+    n_levels=4, border=mirror, colocate_l1;
+    -> S, Wx, Wy per level;
+    :lw.primary_extrema  (per level)
+    maxima mask, mod, arg;
+    -> extrema layers;
+    :_line_ids
+    maxima lines = the OBJECTS;
+    -> lines with point counts;
+    :select.chain_alpha
+    per-line alpha;
+  }
+}
+-> object table (lines; per-line length, mod, alpha);
+
+partition "hline_length  (filter chain step, devices/filters.py)" {
+  :keep line if min_len <= length <= max_len
+  (max_len 0 = no cap; singletons pass)
+  applied per level by resolve.level_keeps,
+  per-level overrides from mz_edges.filter_overrides;
+}
+-> keep masks per level;
+
+partition "mz_edges  (continued)" {
+  partition "output: recon  (selects=True: its key folds in the selection recipe)" {
+    :select.primary_selection
+    recon_levels table (own / near / coder per level),
+    near_radius, alpha_check, alpha_tol, alpha_fallback;
+    -> selected extrema;
+    :select.working_extrep;
+    -> working extrema rep;
+    :recons.e2recons
+    kappa, clip, run_mode, iterations,
+    tolerance, coarse, mode;
+  }
+}
+-> raster;
+
+partition "export" {
+  :write file
+  GeoTIFF: compress, dtype, nodata
+  (no GeoTIFF writer found in GeoDynamix yet:
+  the fork writes .npz via write_derivative);
+}
+-> file + sha256;
+
+partition "view section  (figure exports only)" {
+  :show, colormap, stretch,
+  extent, labels, DPI;
+}
+stop
+
+note right
+  recon reads TWO inputs: the mz_edges analysis result
+  and the hline_length keep masks. A per-device cut (G1)
+  hides that the filter sits between the two halves of mz_edges.
+
+  GeoDynamix marks recon_levels, clip, near_radius,
+  alpha_* as view=True (they do not re-key the transform),
+  yet they change the recon pixels: in a .prov they are
+  processing parameters. The .prov view section holds
+  presentation only.
+end note
+@enduml

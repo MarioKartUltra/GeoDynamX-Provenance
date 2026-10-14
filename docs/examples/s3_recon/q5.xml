@@ -1,0 +1,30 @@
+<mrl:LI_Lineage xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/2.0"
+    xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0" xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/2.0"
+    xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <mrl:source><mrl:LI_Source id="patch">
+    <mrl:description><gco:CharacterString>Uncommitted changes applied to the cited commit.</gco:CharacterString></mrl:description>
+    <mrl:sourceCitation><cit:CI_Citation>
+      <cit:title><gco:CharacterString>fbm_recon_L2.png.patch</gco:CharacterString></cit:title>
+      <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>5e0a…91c2</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+    </cit:CI_Citation></mrl:sourceCitation>
+    <mrl:scope><mcc:MD_Scope><mcc:level><mcc:MD_ScopeCode codeList="https://standards.iso.org/iso/19115/resources/Codelists/cat/codelists.xml#MD_ScopeCode" codeListValue="software">software</mcc:MD_ScopeCode></mcc:level></mcc:MD_Scope></mrl:scope>
+  </mrl:LI_Source></mrl:source>
+  <mrl:processStep><mrl:LE_ProcessStep id="p5">
+    <mrl:description><gco:CharacterString>Render the figure.</gco:CharacterString></mrl:description>
+    <mrl:source xlink:href="#d3"/>
+    <mrl:source xlink:href="#patch"/>
+    <mrl:processingInformation><mrl:LE_Processing>
+      <mrl:algorithm><mrl:LE_Algorithm id="mpl">
+        <mrl:citation><cit:CI_Citation><cit:title><gco:CharacterString>matplotlib</gco:CharacterString></cit:title><cit:edition><gco:CharacterString>3.9.2</gco:CharacterString></cit:edition></cit:CI_Citation></mrl:citation>
+        <mrl:description><gco:CharacterString>renderer</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>render</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></mrl:identifier>
+      <mrl:softwareReference xlink:href="#gdx"/>
+      <mrl:runTimeParameters><gco:CharacterString>{"colormap":"gray","dpi":300,"extent":[0,1024,0,1024],"labels":{"x":"x (px)","y":"y (px)"},"stretch":"linear"}</gco:CharacterString></mrl:runTimeParameters>
+    </mrl:LE_Processing></mrl:processingInformation>
+    <mrl:output><mrl:LE_Source id="o2"><mrl:sourceCitation><cit:CI_Citation>
+      <cit:title><gco:CharacterString>fbm_recon_L2.png</gco:CharacterString></cit:title>
+      <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>c07d…3a18</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+    </cit:CI_Citation></mrl:sourceCitation></mrl:LE_Source></mrl:output>
+  </mrl:LE_ProcessStep></mrl:processStep>
+</mrl:LI_Lineage>

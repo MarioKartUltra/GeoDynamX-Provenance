@@ -1,0 +1,74 @@
+<mrl:LI_Lineage xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/2.0"
+    xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0" xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/2.0"
+    xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <mrl:processStep><mrl:LE_ProcessStep id="p3">
+    <mrl:description><gco:CharacterString>Reconstruction from the level-2 selected maxima: LastWave alternating projections, run to convergence.</gco:CharacterString></mrl:description>
+    <mrl:source xlink:href="#d1"/>
+    <mrl:source xlink:href="#k1"/>
+    <mrl:processingInformation><mrl:LE_Processing>
+      <mrl:algorithm><mrl:LE_Algorithm id="sel">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>Primary selection</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_lastwave.primary_selection</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>maxima each level contributes (own / near / coder)</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="lw_bank">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>LastWave FIR bank</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_lastwave.fir_bank</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>FIR analysis/synthesis bank, bit for bit with LastWave convol2.c</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="lw_proj">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>Alternating projections</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_lastwave.ext2_proj</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>10.1109/34.142909</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>doi</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>alternating projections, LastWave ext2_proj.c</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="w2">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>W2_interp</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_lastwave.w2_interp</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>P_Gamma: W2_interp sinh interpolation between anchors, decay exp(-kappa/2^l)</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="pin">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>Coarse pinning</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_lastwave.pinned_coarse</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>coarse channel pinned in the synthesis</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="stop">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>Converge stop rule</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_lastwave.converge_stop</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>stop at relative change &lt; tolerance, residual rising 3 times running, or the cap</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>mz_edges/recon</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></mrl:identifier>
+      <mrl:softwareReference xlink:href="#gdx"/>
+      <mrl:runTimeParameters><gco:CharacterString>{"lw_bank":{"border":"mirror"},"pin":{"coarse":"full"},"sel":{"alpha_check":false,"alpha_fallback":0,"near_radius":1,"recon_levels":{"levels":{"1":{"source":2,"state":"near"},"2":{"state":"own"},"3":{"source":2,"state":"near"},"4":{"source":2,"state":"near"}}}},"stop":{"iterations":20,"run_mode":"converge","tolerance":0.001},"w2":{"clip":false,"kappa":1}}</gco:CharacterString></mrl:runTimeParameters>
+    </mrl:LE_Processing></mrl:processingInformation>
+    <mrl:report><mrl:LE_ProcessStepReport>
+      <mrl:name><gco:CharacterString>outcome</gco:CharacterString></mrl:name>
+      <mrl:description><gco:CharacterString>{"lw_proj":{"residual":0.0118},"snr_db":27.4,"stop":{"iterations":14,"reason":"converged","returned":14}}</gco:CharacterString></mrl:description>
+    </mrl:LE_ProcessStepReport></mrl:report>
+    <mrl:output><mrl:LE_Source id="d3"/></mrl:output>
+  </mrl:LE_ProcessStep></mrl:processStep>
+</mrl:LI_Lineage>

@@ -1,0 +1,70 @@
+<mrl:LI_Lineage xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/2.0"
+    xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0" xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/2.0"
+    xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+  <mrl:statement><gco:CharacterString>Reconstruction of a synthetic fBm field from its level-2 selected Mallat-Zhong maxima.</gco:CharacterString></mrl:statement>
+  <mrl:additionalDocumentation><cit:CI_Citation>
+    <cit:title><gco:CharacterString>fbm_recon_L2.tif.prov</gco:CharacterString></cit:title>
+    <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>7b5f…efcff</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+  </cit:CI_Citation></mrl:additionalDocumentation>
+  <mrl:source><mrl:LI_Source id="s1">
+    <mrl:description><gco:CharacterString>Declared start: synthetic 2-D fBm, H=0.7, 1024x1024, spectral synthesis, seed 42.</gco:CharacterString></mrl:description>
+    <mrl:sourceCitation><cit:CI_Citation>
+      <cit:title><gco:CharacterString>fbm_H0.7_1024.npz</gco:CharacterString></cit:title>
+      <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>9c1e…04f7</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+    </cit:CI_Citation></mrl:sourceCitation>
+  </mrl:LI_Source></mrl:source>
+  <mrl:processStep><mrl:LE_ProcessStep id="p1">
+    <mrl:description><gco:CharacterString>Dyadic wavelet modulus maxima, LastWave dwtrans2d port, J=4, mirror border.</gco:CharacterString></mrl:description>
+    <mrl:source xlink:href="#s1"/>
+    <mrl:processingInformation><mrl:LE_Processing>
+      <mrl:algorithm><mrl:LE_Algorithm id="a1">
+        <mrl:citation><cit:CI_Citation>
+          <cit:title><gco:CharacterString>Characterization of signals from multiscale edges</gco:CharacterString></cit:title>
+          <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>10.1109/34.142909</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>doi</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+        </cit:CI_Citation></mrl:citation>
+        <mrl:description><gco:CharacterString>multiscale edge detection</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="f1">
+        <mrl:citation><cit:CI_Citation><cit:title><gco:CharacterString>FFTW</gco:CharacterString></cit:title><cit:edition><gco:CharacterString>3.3.10</gco:CharacterString></cit:edition></cit:CI_Citation></mrl:citation>
+        <mrl:description><gco:CharacterString>FFT backend</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>dynamix.mz_edges</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></mrl:identifier>
+      <mrl:softwareReference><cit:CI_Citation id="gdx">
+        <cit:title><gco:CharacterString>GeoDynamix</gco:CharacterString></cit:title>
+        <cit:edition><gco:CharacterString>6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8</gco:CharacterString></cit:edition>
+        <cit:otherCitationDetails><gco:CharacterString>python 3.12.4</gco:CharacterString></cit:otherCitationDetails>
+        <cit:otherCitationDetails><gco:CharacterString>numpy 2.1.0</gco:CharacterString></cit:otherCitationDetails>
+        <cit:otherCitationDetails><gco:CharacterString>pyfftw 0.15.1</gco:CharacterString></cit:otherCitationDetails>
+        <cit:onlineResource><cit:CI_OnlineResource><cit:linkage><gco:CharacterString>https://github.com/MarioKartUltra/GeoDynamX</gco:CharacterString></cit:linkage></cit:CI_OnlineResource></cit:onlineResource>
+      </cit:CI_Citation></mrl:softwareReference>
+      <mrl:runTimeParameters><gco:CharacterString>{"algorithm":"lastwave","border":"mirror","n_levels":4,"precision":32}</gco:CharacterString></mrl:runTimeParameters>
+    </mrl:LE_Processing></mrl:processingInformation>
+    <mrl:output><mrl:LE_Source id="d1"/></mrl:output>
+  </mrl:LE_ProcessStep></mrl:processStep>
+  <mrl:processStep><mrl:LE_ProcessStep id="p2">
+    <mrl:description><gco:CharacterString>Iterative reconstruction from the level-2 selected maxima, coarse channel pinned.</gco:CharacterString></mrl:description>
+    <mrl:source xlink:href="#d1"/>
+    <mrl:processingInformation><mrl:LE_Processing>
+      <mrl:algorithm xlink:href="#a1"/><mrl:algorithm xlink:href="#f1"/>
+      <mrl:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>dynamix.mz_edges/recon</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></mrl:identifier>
+      <mrl:softwareReference xlink:href="#gdx"/>
+      <mrl:runTimeParameters><gco:CharacterString>{"coarse":"full","iterations":20,"kappa":1,"near_radius":1,"recon_levels":{"levels":{"1":{"source":2,"state":"near"},"2":{"state":"own"},"3":{"source":2,"state":"near"},"4":{"source":2,"state":"near"}}},"run_mode":"converge","selection":[["hline_length",{"max_len":0,"min_len":8}]],"tolerance":0.001}</gco:CharacterString></mrl:runTimeParameters>
+    </mrl:LE_Processing></mrl:processingInformation>
+    <mrl:output><mrl:LE_Source id="d2"/></mrl:output>
+  </mrl:LE_ProcessStep></mrl:processStep>
+  <mrl:processStep><mrl:LE_ProcessStep id="p3">
+    <mrl:description><gco:CharacterString>Export to GeoTIFF.</gco:CharacterString></mrl:description>
+    <mrl:stepDateTime><gml:TimeInstant gml:id="t_p3"><gml:timePosition>2026-10-01T14:02:11Z</gml:timePosition></gml:TimeInstant></mrl:stepDateTime>
+    <mrl:source xlink:href="#d2"/>
+    <mrl:processingInformation><mrl:LE_Processing>
+      <mrl:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>dynamix.export.geotiff</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></mrl:identifier>
+      <mrl:softwareReference xlink:href="#gdx"/>
+      <mrl:runTimeParameters><gco:CharacterString>{"compress":"deflate","dtype":"float32","nodata":"NaN"}</gco:CharacterString></mrl:runTimeParameters>
+    </mrl:LE_Processing></mrl:processingInformation>
+    <mrl:output><mrl:LE_Source id="o1"><mrl:sourceCitation><cit:CI_Citation>
+      <cit:title><gco:CharacterString>fbm_recon_L2.tif</gco:CharacterString></cit:title>
+      <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>4b1d…e07a</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+    </cit:CI_Citation></mrl:sourceCitation></mrl:LE_Source></mrl:output>
+  </mrl:LE_ProcessStep></mrl:processStep>
+</mrl:LI_Lineage>

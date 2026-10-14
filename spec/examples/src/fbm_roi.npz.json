@@ -1,0 +1,22 @@
+{"gprv": "0.1",
+ "statement": "A 512x512 window of a synthetic fBm field, forked to a derived dataset.",
+ "source": [
+   {"id": "s1", "description": "Declared start: synthetic 2-D fBm, H=0.7, 1024x1024, spectral synthesis, seed 42.",
+    "sourceCitation": {"title": "fbm_H0.7_1024.npz", "sha256": "c2b082442efa2a3869033fd252bf6da2c181bc03c7660010e488ffb6bba23db8"}}],
+ "processStep": [
+   {"id": "p1", "description": "ROI window, 512x512 from (256, 256).",
+    "source": ["s1"], "output": [{"id": "d1"}],
+    "processingInformation": {
+      "identifier": {"code": "roi/window", "codeSpace": "geodynamix"},
+      "softwareReference": {"id": "gdx", "title": "GeoDynamix", "edition": "6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8",
+                            "otherCitationDetails": ["python 3.12.13", "numpy 2.4.3"],
+                            "onlineResource": [{"linkage": "https://github.com/MarioKartUltra/GeoDynamX"}]},
+      "runTimeParameters": {"height": 512, "width": 512, "x0": 256, "y0": 256}}},
+   {"id": "p2", "description": "Fork: the window written as a derived dataset.",
+    "stepDateTime": "2026-10-01T16:05:12Z",
+    "source": ["d1"],
+    "output": [{"id": "o1", "sourceCitation": {"title": "fbm_roi.npz", "sha256": "5ef928efdec603cb6df541fb750261950914c6077651e2be811285d0b4ee9991"}}],
+    "processingInformation": {
+      "identifier": {"code": "fork", "codeSpace": "geodynamix"},
+      "softwareReference": "gdx",
+      "runTimeParameters": {"bands": ["field"]}}}]}

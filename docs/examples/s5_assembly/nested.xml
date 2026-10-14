@@ -1,0 +1,16 @@
+<mrl:LI_Lineage xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/2.0"
+    xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0" xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/2.0"
+    xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <mrl:source><mrl:LI_Source id="c.s1">
+    <mrl:description><gco:CharacterString>The forked dataset fbm_edges.npz.</gco:CharacterString></mrl:description>
+    <mrl:sourceStep><mrl:LE_ProcessStep id="p.p2">
+      <mrl:description><gco:CharacterString>Fork.</gco:CharacterString></mrl:description>
+      <mrl:source><mrl:LI_Source id="p.d1">
+        <mrl:sourceStep><mrl:LE_ProcessStep id="p.p1">
+          <mrl:description><gco:CharacterString>Dyadic wavelet modulus maxima.</gco:CharacterString></mrl:description>
+          <mrl:source><mrl:LI_Source id="p.s1"><mrl:description><gco:CharacterString>Declared start: synthetic fBm.</gco:CharacterString></mrl:description></mrl:LI_Source></mrl:source>
+        </mrl:LE_ProcessStep></mrl:sourceStep>
+      </mrl:LI_Source></mrl:source>
+    </mrl:LE_ProcessStep></mrl:sourceStep>
+  </mrl:LI_Source></mrl:source>
+</mrl:LI_Lineage>

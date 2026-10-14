@@ -1,0 +1,49 @@
+{
+  "prov": "0.1",
+  "statement": "Reconstruction of a synthetic fBm field from its level-2 selected Mallat-Zhong maxima.",
+  "source": [
+    {"id": "s1",
+     "description": "Declared start: synthetic 2-D fBm, H=0.7, 1024x1024, spectral synthesis, seed 42.",
+     "sourceCitation": {"title": "fbm_H0.7_1024.npz", "sha256": "9c1e…04f7"}}
+  ],
+  "processStep": [
+    {"id": "p1",
+     "description": "Dyadic wavelet modulus maxima, LastWave dwtrans2d port, J=4, mirror border.",
+     "source": ["s1"],
+     "output": [{"id": "d1"}],
+     "processingInformation": {
+       "algorithm": [
+         {"id": "a1", "description": "multiscale edge detection",
+          "citation": {"title": "Characterization of signals from multiscale edges",
+                       "identifier": [{"code": "10.1109/34.142909", "codeSpace": "doi"}]}},
+         {"id": "f1", "description": "FFT backend", "citation": {"title": "FFTW", "edition": "3.3.10"}}],
+       "identifier": {"code": "dynamix.mz_edges", "codeSpace": "geodynamix"},
+       "softwareReference": {"id": "gdx", "title": "GeoDynamix",
+         "edition": "6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8",
+         "otherCitationDetails": ["python 3.12.4", "numpy 2.1.0", "pyfftw 0.15.1"],
+         "onlineResource": [{"linkage": "https://github.com/MarioKartUltra/GeoDynamX"}]},
+       "runTimeParameters": {"algorithm": "lastwave", "border": "mirror", "n_levels": 4, "precision": 32}}},
+    {"id": "p2",
+     "description": "Iterative reconstruction from the level-2 selected maxima, coarse channel pinned.",
+     "source": ["d1"],
+     "output": [{"id": "d2"}],
+     "processingInformation": {
+       "algorithm": ["a1", "f1"],
+       "identifier": {"code": "dynamix.mz_edges/recon", "codeSpace": "geodynamix"},
+       "softwareReference": "gdx",
+       "runTimeParameters": {"coarse": "full", "iterations": 20, "kappa": 1, "near_radius": 1,
+         "recon_levels": {"levels": {"1": {"source": 2, "state": "near"}, "2": {"state": "own"},
+           "3": {"source": 2, "state": "near"}, "4": {"source": 2, "state": "near"}}},
+         "run_mode": "converge", "selection": [["hline_length", {"max_len": 0, "min_len": 8}]],
+         "tolerance": 0.001}}},
+    {"id": "p3",
+     "description": "Export to GeoTIFF.",
+     "stepDateTime": "2026-10-01T14:02:11Z",
+     "source": ["d2"],
+     "output": [{"id": "o1", "sourceCitation": {"title": "fbm_recon_L2.tif", "sha256": "4b1d…e07a"}}],
+     "processingInformation": {
+       "identifier": {"code": "dynamix.export.geotiff", "codeSpace": "geodynamix"},
+       "softwareReference": "gdx",
+       "runTimeParameters": {"compress": "deflate", "dtype": "float32", "nodata": "NaN"}}}
+  ]
+}

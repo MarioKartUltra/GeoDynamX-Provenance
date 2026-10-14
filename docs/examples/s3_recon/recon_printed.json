@@ -1,0 +1,26 @@
+{"id": "p3",
+ "description": "Reconstruction from all maxima: Mallat-Zhong POCS, separable P_Gamma, 10 iterations, FFTW.",
+ "source": ["d1"],
+ "output": [{"id": "d3"}],
+ "processingInformation": {
+   "algorithm": [
+     {"id": "mz_bank", "description": "Fourier-domain M-Z spline filter bank",
+      "citation": {"title": "M-Z spline bank", "identifier": [{"code": "mz_edges.spline_bank", "codeSpace": "geodynamix"}]}},
+     {"id": "pocs", "description": "POCS, fixed iteration count",
+      "citation": {"title": "POCS reconstruction", "identifier": [{"code": "mz_edges.pocs", "codeSpace": "geodynamix"},
+                                                                  {"code": "10.1109/34.142909", "codeSpace": "doi"}]}},
+     {"id": "pg_sep", "description": "P_Gamma: separable interpolation operator",
+      "citation": {"title": "Separable P_Gamma", "identifier": [{"code": "mz_edges.pgamma_separable", "codeSpace": "geodynamix"}]}},
+     {"id": "pin_t", "description": "coarse channel pinned in the synthesis",
+      "citation": {"title": "Coarse pinning", "identifier": [{"code": "mz_edges.coarse_torus", "codeSpace": "geodynamix"}]}},
+     {"id": "fftw", "description": "FFT backend (fft_policy)", "citation": {"title": "FFTW", "edition": "3.3.10"}}],
+   "identifier": {"code": "mz_edges/recon", "codeSpace": "geodynamix"},
+   "softwareReference": "gdx",
+   "runTimeParameters": {
+     "fftw": {"planner": "FFTW_ESTIMATE", "precision": 32},
+     "pg_sep": {"mode": "separable"},
+     "pin_t": {"coarse": "full"},
+     "pocs": {"iterations": 10}}},
+ "report": [{"name": "outcome", "description": {
+   "pocs": {"iterations": 10, "reason": "fixed", "residual": 0.0312, "status": "still improving"},
+   "snr_db": 22.8}}]}

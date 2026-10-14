@@ -1,0 +1,32 @@
+{"id": "p3",
+ "description": "Reconstruction from the level-2 selected maxima: LastWave alternating projections, run to convergence.",
+ "source": ["d1", "k1"],
+ "output": [{"id": "d3"}],
+ "processingInformation": {
+   "algorithm": [
+     {"id": "sel", "description": "maxima each level contributes (own / near / coder)",
+      "citation": {"title": "Primary selection", "identifier": [{"code": "mz_lastwave.primary_selection", "codeSpace": "geodynamix"}]}},
+     {"id": "lw_bank", "description": "FIR analysis/synthesis bank, bit for bit with LastWave convol2.c",
+      "citation": {"title": "LastWave FIR bank", "identifier": [{"code": "mz_lastwave.fir_bank", "codeSpace": "geodynamix"}]}},
+     {"id": "lw_proj", "description": "alternating projections, LastWave ext2_proj.c",
+      "citation": {"title": "Alternating projections", "identifier": [{"code": "mz_lastwave.ext2_proj", "codeSpace": "geodynamix"},
+                                                                      {"code": "10.1109/34.142909", "codeSpace": "doi"}]}},
+     {"id": "w2", "description": "P_Gamma: W2_interp sinh interpolation between anchors, decay exp(-kappa/2^l)",
+      "citation": {"title": "W2_interp", "identifier": [{"code": "mz_lastwave.w2_interp", "codeSpace": "geodynamix"}]}},
+     {"id": "pin", "description": "coarse channel pinned in the synthesis",
+      "citation": {"title": "Coarse pinning", "identifier": [{"code": "mz_lastwave.pinned_coarse", "codeSpace": "geodynamix"}]}},
+     {"id": "stop", "description": "stop at relative change < tolerance, residual rising 3 times running, or the cap",
+      "citation": {"title": "Converge stop rule", "identifier": [{"code": "mz_lastwave.converge_stop", "codeSpace": "geodynamix"}]}}],
+   "identifier": {"code": "mz_edges/recon", "codeSpace": "geodynamix"},
+   "softwareReference": "gdx",
+   "runTimeParameters": {
+     "lw_bank": {"border": "mirror"},
+     "pin": {"coarse": "full"},
+     "sel": {"alpha_check": false, "alpha_fallback": 0, "near_radius": 1,
+             "recon_levels": {"levels": {"1": {"source": 2, "state": "near"}, "2": {"state": "own"},
+                                         "3": {"source": 2, "state": "near"}, "4": {"source": 2, "state": "near"}}}},
+     "stop": {"iterations": 20, "run_mode": "converge", "tolerance": 0.001},
+     "w2": {"clip": false, "kappa": 1}}},
+ "report": [{"name": "outcome", "description": {
+   "lw_proj": {"residual": 0.0118}, "snr_db": 27.4,
+   "stop": {"iterations": 14, "reason": "converged", "returned": 14}}}]}

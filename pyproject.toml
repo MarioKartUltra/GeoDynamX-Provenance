@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gprv"
+version = "0.1.0.dev0"
+description = "Write, check, assemble and export .gprv provenance records"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+dependencies = ["rfc8785>=0.1.4"]
+
+[project.optional-dependencies]
+test = ["pytest", "jsonschema", "lxml", "numpy"]
+
+[project.scripts]
+gprv = "gprv.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+gprv = ["schema/*.json"]
