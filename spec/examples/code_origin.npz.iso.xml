@@ -1,0 +1,148 @@
+<mrl:LI_Lineage xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/2.0"
+    xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0" xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/2.0"
+    xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+  <mrl:statement><gco:CharacterString>A ridge filter from a user's devices folder applied to a synthetic field, with every kind of code origin a step can name.</gco:CharacterString></mrl:statement>
+  <mrl:additionalDocumentation>
+    <cit:CI_Citation>
+      <cit:title><gco:CharacterString>code_origin.npz.gprv.jsonl</gco:CharacterString></cit:title>
+      <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>0ad7a9dd7e3ba30537e5ea2679983f53d8e0998cea4fe89bd9d753dd9565d7ac</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+    </cit:CI_Citation>
+  </mrl:additionalDocumentation>
+  <mrl:source><mrl:LI_Source id="rd8b871bcc76b.s1">
+    <mrl:description><gco:CharacterString>A 256x256 synthetic fractional Brownian field, H = 0.6, seed 7.</gco:CharacterString></mrl:description>
+    <mrl:sourceCitation>
+      <cit:CI_Citation>
+        <cit:title><gco:CharacterString>fbm_256.npz</gco:CharacterString></cit:title>
+        <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>9d4e0a0b3b7a7c1a0e5f2c9d8b7a6f5e4d3c2b1a0f9e8d7c6b5a4f3e2d1c0b9a</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+      </cit:CI_Citation>
+    </mrl:sourceCitation>
+  </mrl:LI_Source></mrl:source>
+  <mrl:processStep><mrl:LE_ProcessStep id="rd8b871bcc76b.p1">
+    <mrl:description><gco:CharacterString>Ridge filter: a user device found in the devices folder, run on the field.</gco:CharacterString></mrl:description>
+    <mrl:source xlink:href="#rd8b871bcc76b.s1"/>
+    <mrl:processingInformation><mrl:LE_Processing>
+      <mrl:algorithm><mrl:LE_Algorithm id="rd8b871bcc76b.ridge">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>ridge_filter</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>ridge_filter.ridge</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>user</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+            <cit:otherCitationDetails><gco:CharacterString>source file:devices/ridge_filter.py</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>version 0.3</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>kind file</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>sha256 0b4f2d7e8a9c1b3d5f6e7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d (file)</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>license MIT</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>editable</gco:CharacterString></cit:otherCitationDetails>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>the ridge kernel, from the user's file</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="rd8b871bcc76b.fft">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>pyFFTW</gco:CharacterString></cit:title>
+            <cit:edition><gco:CharacterString>0.15.0</gco:CharacterString></cit:edition>
+            <cit:otherCitationDetails><gco:CharacterString>source pypi:pyFFTW==0.15.0</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>version 0.15.0</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>kind package</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>sha256 1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d (distribution)</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>license BSD-3-Clause</gco:CharacterString></cit:otherCitationDetails>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>the FFT backend, an installed package</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="rd8b871bcc76b.wtmm">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>wtmm</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>wtmm.cwt2d</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+            <cit:otherCitationDetails><gco:CharacterString>source git+https://github.com/MarioKartUltra/GeoDynamX@6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>version 6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>kind repository</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>sha256 (none)</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>license GPL-2.0-or-later</gco:CharacterString></cit:otherCitationDetails>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>the wavelet transform, pinned by its repository commit</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="rd8b871bcc76b.lw">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>LastWave 3.0</gco:CharacterString></cit:title>
+            <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>10.1109/34.142909</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>doi</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+            <cit:otherCitationDetails><gco:CharacterString>source https://example.org/lastwave/lastwave-3.0.tar.gz</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>version 3.0</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>kind archive</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>sha256 2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e (directory)</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>license GPL-2.0-only</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>Mallat and Zhong 1992, doi:10.1109/34.142909</gco:CharacterString></cit:otherCitationDetails>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>the LastWave reference port, from a published archive</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="rd8b871bcc76b.geoid">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>EGM2008 geoid service</gco:CharacterString></cit:title>
+            <cit:otherCitationDetails><gco:CharacterString>source https://geoid.example.org/v2/height</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>kind service</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>sha256 (none)</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>license NOASSERTION</gco:CharacterString></cit:otherCitationDetails>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>a geoid height looked up from a remote service</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:algorithm><mrl:LE_Algorithm id="rd8b871bcc76b.nb">
+        <mrl:citation>
+          <cit:CI_Citation>
+            <cit:title><gco:CharacterString>normalise cell</gco:CharacterString></cit:title>
+            <cit:otherCitationDetails><gco:CharacterString>source urn:uuid:5d2a8f7e-1b3c-4d5e-9f6a-7b8c9d0e1f2a</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>kind other</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>sha256 3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f (file)</gco:CharacterString></cit:otherCitationDetails>
+            <cit:otherCitationDetails><gco:CharacterString>license NOASSERTION</gco:CharacterString></cit:otherCitationDetails>
+          </cit:CI_Citation>
+        </mrl:citation>
+        <mrl:description><gco:CharacterString>a notebook cell pasted in by hand, hashed as text</gco:CharacterString></mrl:description>
+      </mrl:LE_Algorithm></mrl:algorithm>
+      <mrl:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>ridge_filter/run</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>user</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></mrl:identifier>
+      <mrl:softwareReference>
+        <cit:CI_Citation id="rd8b871bcc76b.gdx">
+          <cit:title><gco:CharacterString>GeoDynamix</gco:CharacterString></cit:title>
+          <cit:edition><gco:CharacterString>6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8</gco:CharacterString></cit:edition>
+          <cit:otherCitationDetails><gco:CharacterString>python 3.12.13</gco:CharacterString></cit:otherCitationDetails>
+          <cit:otherCitationDetails><gco:CharacterString>numpy 2.4.3</gco:CharacterString></cit:otherCitationDetails>
+          <cit:onlineResource><cit:CI_OnlineResource><cit:linkage><gco:CharacterString>https://github.com/MarioKartUltra/GeoDynamX</gco:CharacterString></cit:linkage></cit:CI_OnlineResource></cit:onlineResource>
+        </cit:CI_Citation>
+      </mrl:softwareReference>
+      <mrl:documentation>
+        <cit:CI_Citation>
+          <cit:title><gco:CharacterString>ridge_filter</gco:CharacterString></cit:title>
+          <cit:edition><gco:CharacterString>0.3</gco:CharacterString></cit:edition>
+          <cit:otherCitationDetails><gco:CharacterString>kind file</gco:CharacterString></cit:otherCitationDetails>
+          <cit:otherCitationDetails><gco:CharacterString>sha256 0b4f2d7e8a9c1b3d5f6e7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d (file)</gco:CharacterString></cit:otherCitationDetails>
+          <cit:otherCitationDetails><gco:CharacterString>license MIT</gco:CharacterString></cit:otherCitationDetails>
+          <cit:otherCitationDetails><gco:CharacterString>editable</gco:CharacterString></cit:otherCitationDetails>
+          <cit:onlineResource><cit:CI_OnlineResource><cit:linkage><gco:CharacterString>file:devices/ridge_filter.py</gco:CharacterString></cit:linkage></cit:CI_OnlineResource></cit:onlineResource>
+        </cit:CI_Citation>
+      </mrl:documentation>
+      <mrl:runTimeParameters><gco:CharacterString>{"ridge":{"gain":2}}</gco:CharacterString></mrl:runTimeParameters>
+    </mrl:LE_Processing></mrl:processingInformation>
+    <mrl:output><mrl:LE_Source id="rd8b871bcc76b.d1"/></mrl:output>
+  </mrl:LE_ProcessStep></mrl:processStep>
+  <mrl:processStep><mrl:LE_ProcessStep id="rd8b871bcc76b.p2">
+    <mrl:description><gco:CharacterString>Export: the filtered field written as a derived dataset.</gco:CharacterString></mrl:description>
+    <mrl:stepDateTime><gml:TimeInstant gml:id="rd8b871bcc76b.p2.t"><gml:timePosition>2026-10-15T14:30:00Z</gml:timePosition></gml:TimeInstant></mrl:stepDateTime>
+    <mrl:source xlink:href="#rd8b871bcc76b.d1"/>
+    <mrl:processingInformation><mrl:LE_Processing>
+      <mrl:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>fork</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>geodynamix</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></mrl:identifier>
+      <mrl:softwareReference xlink:href="#rd8b871bcc76b.gdx"/>
+      <mrl:runTimeParameters><gco:CharacterString>{"bands":["ridge"]}</gco:CharacterString></mrl:runTimeParameters>
+    </mrl:LE_Processing></mrl:processingInformation>
+    <mrl:output><mrl:LE_Source id="rd8b871bcc76b.o1"><mrl:sourceCitation>
+      <cit:CI_Citation>
+        <cit:title><gco:CharacterString>code_origin.npz</gco:CharacterString></cit:title>
+        <cit:identifier><mcc:MD_Identifier><mcc:code><gco:CharacterString>4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a</gco:CharacterString></mcc:code><mcc:codeSpace><gco:CharacterString>sha256</gco:CharacterString></mcc:codeSpace></mcc:MD_Identifier></cit:identifier>
+      </cit:CI_Citation>
+    </mrl:sourceCitation></mrl:LE_Source></mrl:output>
+  </mrl:LE_ProcessStep></mrl:processStep>
+</mrl:LI_Lineage>

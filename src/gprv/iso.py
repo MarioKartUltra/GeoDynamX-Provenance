@@ -88,7 +88,8 @@ class _Writer:
         return details
 
     def origin_citation(self, o) -> dict:
-        """A step's code origin as a second software reference (§10)."""
+        """A step's code origin as a citation (§10): the software reference when the step cites no
+        code base, else a documentation citation, since 19115-3 allows one software reference."""
         c = {"title": o.get("name", ""), "otherCitationDetails": self.origin_details(o),
              "onlineResource": [{"linkage": o.get("source", "")}]}
         if o.get("version") is not None:
@@ -162,8 +163,9 @@ class _Writer:
             o.append(f"{J}<mrl:identifier>{md_identifier(p['identifier'])}</mrl:identifier>")
             if "softwareReference" in p:
                 o += self.wrapped("mrl:softwareReference", p["softwareReference"], J, h)
-            if "codeOrigin" in st:
-                o += self.wrapped("mrl:softwareReference", self.origin_citation(st["codeOrigin"]), J, h)
+            if "codeOrigin" in st:                          # 19115-3 allows one softwareReference
+                tag = "mrl:documentation" if "softwareReference" in p else "mrl:softwareReference"
+                o += self.wrapped(tag, self.origin_citation(st["codeOrigin"]), J, h)
             if "runTimeParameters" in p:
                 o.append(text("mrl:runTimeParameters", json_text(p["runTimeParameters"]), J))
             o.append(f"{I}  </mrl:LE_Processing></mrl:processingInformation>")

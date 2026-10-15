@@ -6,7 +6,7 @@ from gprv.assembly import assemble
 from gprv.canon import canonical, sha256
 from gprv.iso import export
 
-PRODUCTS = ["fbm_recon.tif", "fbm_recon.png", "boem_roi.npz"]
+PRODUCTS = ["fbm_recon.tif", "fbm_recon.png", "boem_roi.npz", "code_origin.npz"]
 
 
 def exported(name):
@@ -100,9 +100,9 @@ def exported_with_origins():
     return export(assemble([(EXAMPLES / "fbm_roi.npz.gprv").read_bytes(), canonical(rec)]), "x.gprv.jsonl")
 
 
-def test_a_step_origin_exports_as_a_second_software_reference():
+def test_a_step_origin_exports_as_a_documentation_citation_beside_the_software_reference():
     xml = exported_with_origins()
-    assert xml.count("<mrl:softwareReference>") >= 2
+    assert "<mrl:documentation>" in xml                  # the code base keeps the one softwareReference
     assert "<cit:title><gco:CharacterString>ridge_filter</gco:CharacterString></cit:title>" in xml
     assert "<cit:edition><gco:CharacterString>1.2.0</gco:CharacterString></cit:edition>" in xml
     assert "file:devices/ridge_filter.py" in xml
@@ -117,5 +117,6 @@ def test_a_component_origin_exports_as_citation_details():
 
 
 @needs_schemas
-def test_a_0_2_export_validates_against_19115_3():
-    validate_or_skip(exported_with_origins(), "2.0")
+@pytest.mark.parametrize("version", ["2.0", "1.0"])
+def test_a_0_2_export_validates_against_19115_3(version):
+    assert validate_or_skip(exported_with_origins(), version) == []

@@ -320,7 +320,7 @@ With the files at hand, a verifier also checks the sha256 of every cited file. R
   | a resolved parent citation | `LI_Source/sourceStep` → the parent step that output the dataset |
   | the sink's `statement` | `mrl:statement` |
   | the assembly file | `additionalDocumentation`, with its sha256 |
-  | a step's `codeOrigin` | a second `mrl:softwareReference` citation: `title` = `name`, `edition` = `version`, `onlineResource` = `source`, `otherCitationDetails` = the hash and the licence as text |
+  | a step's `codeOrigin` | a citation with `title` = `name`, `edition` = `version`, `onlineResource` = `source`, `otherCitationDetails` = the kind, the hash and the licence as text: `mrl:softwareReference` when the step cites no code base, else `mrl:documentation` (19115-3 allows one software reference) |
   | a component's `codeOrigin` | `otherCitationDetails` on the component's citation: source, version, hash and licence as text |
 
 - What the export loses: the `gprv` version, the ancestors' statements (`LI_Lineage` holds one), parameter

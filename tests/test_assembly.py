@@ -94,4 +94,4 @@ def test_collect_reports_an_ancestor_missing_from_the_store():
 
 def test_load_store_reads_every_record_in_the_directories():
     store = load_store([EXAMPLES])
-    assert store[sha256(PARENT)] == PARENT and len(store) == 4
+    assert store[sha256(PARENT)] == PARENT and len(store) == len(list(EXAMPLES.glob("*.gprv")))

@@ -8,8 +8,9 @@ from pathlib import Path
 import gprv
 
 HERE = Path(__file__).resolve().parent
-RECORDS = {"fbm_roi.npz": None, "fbm_recon.tif": "fbm_roi.npz", "fbm_recon.png": "fbm_roi.npz", "boem_roi.npz": None}
-PRODUCTS = ["fbm_recon.tif", "fbm_recon.png", "boem_roi.npz"]
+RECORDS = {"fbm_roi.npz": None, "fbm_recon.tif": "fbm_roi.npz", "fbm_recon.png": "fbm_roi.npz", "boem_roi.npz": None,
+           "code_origin.npz": None}
+PRODUCTS = ["fbm_recon.tif", "fbm_recon.png", "boem_roi.npz", "code_origin.npz"]
 
 
 def build(out: Path):
