@@ -56,3 +56,24 @@ def test_normalize_refuses_non_string_keys():
 
 def test_sha256_is_lowercase_hex_of_the_bytes():
     assert sha256(b"") == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
+
+# --------------------------------------------------------------------------- 0.2: code hashes
+
+
+def test_a_directory_hash_is_the_spec_concatenation_in_sorted_path_order(tmp_path):
+    import hashlib
+
+    from gprv.canon import hash_directory, hash_file
+
+    (tmp_path / "b.py").write_bytes(b"print(2)\n")
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "sub" / "a.py").write_bytes(b"print(1)\n")
+    (tmp_path / "empty").mkdir()                          # counts for nothing
+    expected = ""
+    for rel in ("b.py", "sub/a.py"):
+        expected += rel + "\n" + hashlib.sha256((tmp_path / rel).read_bytes()).hexdigest() + "\n"
+    assert hash_directory(tmp_path) == hashlib.sha256(expected.encode()).hexdigest()
+    assert hash_file(tmp_path / "b.py") == hashlib.sha256(b"print(2)\n").hexdigest()
+    (tmp_path / "sub" / "a.py").write_bytes(b"print(3)\n")
+    assert hash_directory(tmp_path) != hashlib.sha256(expected.encode()).hexdigest()

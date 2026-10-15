@@ -93,3 +93,45 @@ def test_export_refuses_what_does_not_verify(tmp_path, capsys):
 def test_show_pretty_prints(capsys):
     code, out = run(capsys, "show", EXAMPLES / "fbm_roi.npz.gprv")
     assert code == 0 and '"statement": "A 512x512 window' in out
+
+
+# --------------------------------------------------------------------------- 0.2: --code-root
+
+
+def _origin_record(tmp_path, code_dir, file_hash, dir_hash):
+    """A 0.2 record minted in tmp_path: step p1 with a file origin, its component with a directory origin."""
+    import gprv
+    from test_record import origin, with_origins
+    from conftest import example
+
+    rec = with_origins(example("fbm_recon.tif.gprv"),
+                       step=origin(source="file:devices/ridge.py",
+                                   contentHash={"algorithm": "sha256", "value": file_hash, "covers": "file"}),
+                       component=origin(kind="file", source="file:devices", name="devices",
+                                        contentHash={"algorithm": "sha256", "value": dir_hash, "covers": "directory"}))
+    path = tmp_path / "x.gprv"
+    gprv.write(path, rec)
+    return path
+
+
+def test_code_root_reports_match_mismatch_and_unavailable(tmp_path, capsys):
+    from gprv.canon import hash_directory, hash_file
+
+    code = tmp_path / "code"
+    (code / "devices").mkdir(parents=True)
+    (code / "devices" / "ridge.py").write_bytes(b"def ridge(): pass\n")
+    file_hash, dir_hash = hash_file(code / "devices" / "ridge.py"), hash_directory(code / "devices")
+    rec = _origin_record(tmp_path, code, file_hash, dir_hash)
+    code_, out = run(capsys, "verify", "--code-root", code, rec)
+    assert code_ == 0 and "VERIFIED" in out and out.count("code: match") == 2
+    (code / "devices" / "ridge.py").write_bytes(b"def ridge(): return 1\n")
+    code_, out = run(capsys, "verify", "--code-root", code, rec)
+    assert code_ == 1 and "FAILED" in out and "ridge.py" in out and "mismatch" in out
+    code_, out = run(capsys, "verify", "--code-root", tmp_path / "elsewhere", rec)
+    assert code_ == 0 and "VERIFIED" in out and out.count("code: unavailable") == 2
+
+
+def test_verify_without_a_code_root_says_nothing_about_code(tmp_path, capsys):
+    rec = _origin_record(tmp_path, tmp_path, "a" * 64, "b" * 64)
+    code_, out = run(capsys, "verify", rec)
+    assert code_ == 0 and "code:" not in out

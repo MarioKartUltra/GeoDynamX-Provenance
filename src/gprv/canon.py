@@ -1,6 +1,7 @@
 """Canonical bytes (RFC 8785) and the value rules of spec §3."""
 import hashlib
 import math
+from pathlib import Path
 
 import rfc8785
 
@@ -48,3 +49,19 @@ def normalize(obj):
 
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def hash_file(path) -> str:
+    """A code origin's content hash that covers a file: the sha256 of its bytes."""
+    return sha256(Path(path).read_bytes())
+
+
+def hash_directory(path) -> str:
+    """A code origin's content hash that covers a directory (spec §3): the sha256 of, for every regular
+    file under it in sorted POSIX relative-path order, the UTF-8 path, a line feed, the file's sha256 in
+    hex and a line feed. Symbolic links and empty directories count for nothing."""
+    root = Path(path)
+    files = sorted((f for f in root.rglob("*") if f.is_file() and not f.is_symlink()),
+                   key=lambda f: f.relative_to(root).as_posix())
+    text = "".join(f"{f.relative_to(root).as_posix()}\n{hash_file(f)}\n" for f in files)
+    return sha256(text.encode("utf-8"))

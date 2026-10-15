@@ -1,4 +1,4 @@
-# `.gprv` 0.1: a provenance record for printed data
+# `.gprv` 0.2: a provenance record for printed data
 
 Draft of 2026-10-05, approved by the author the same day. License: CC BY 4.0. The worked records and their
 ISO exports are in `spec/examples/`; the `gprv` Python library (`src/gprv/`) implements this spec.
@@ -39,6 +39,10 @@ user works is the application's business.
   - an integer outside ±(2^53 − 1) is written as a string;
   - strings are kept as entered (no Unicode normalization).
 - Hashes are sha256, written as 64 lowercase hex characters.
+- A directory hash (a `codeOrigin` content hash that covers a directory) is the sha256 of the concatenation,
+  over every regular file under the directory in sorted order of its POSIX relative path, of the UTF-8 path,
+  a line feed, the file's sha256 in hex, and a line feed. Symbolic links and empty directories count for
+  nothing.
 - A record sits beside the file it describes, named `<printed file name>.gprv` (`fbm_recon.tif.gprv`). An
   assembly is named `<printed file name>.gprv.jsonl`.
 - A record is written once. Changing a saved record changes its hash and breaks every citation of it.
@@ -57,7 +61,8 @@ user works is the application's business.
 4. A string where the schema expects an object is a reference to the object with that `id`
    (`xlink:href="#id"`). The referenced object is defined in an earlier step, or earlier in the same list.
 5. Everything mandatory in ISO is mandatory here, so the exported XML is valid by construction.
-6. Two keys have no ISO element: `gprv` (the format version) and `sha256` (allowed on any citation).
+6. Three keys have no ISO element: `gprv` (the format version), `sha256` (allowed on any citation) and
+   `codeOrigin` (allowed on a step and on a component, §6.1).
 7. Arrays keep their order, and the order is part of the hash.
 
 ### 4.2 Objects
@@ -66,7 +71,7 @@ user works is the application's business.
 
 | Key | | Content |
 |---|---|---|
-| `gprv` | 1 | `"0.1"` |
+| `gprv` | 1 | `"0.2"` (a reader accepts `"0.1"` too) |
 | `statement` | 1 | one sentence on what was printed |
 | `source` | 0..* | sources |
 | `processStep` | 1..* | steps in run order; the last is the print step |
@@ -94,6 +99,7 @@ user works is the application's business.
 | `processingInformation` | 0..1 | the code that ran; absent on a reported step |
 | `report` | 0..* | `{name, description}`; `name` = `outcome` for the outcome (§5.6) |
 | `output` | 0..* | `{id, sourceCitation}`; the citation (title and `sha256`) only when the output is a file |
+| `codeOrigin` | 0..1 | where the step's code came from, when the commit form of §6 cannot name it (§6.1) |
 
 **Processing** (`mrl:LE_Processing`)
 
@@ -104,7 +110,20 @@ user works is the application's business.
 | `softwareReference` | 0..1 | citation of the code base (§6), or the `id` of one defined earlier |
 | `runTimeParameters` | 0..1 | object (§5.4) |
 
-**Component** (`mrl:LE_Algorithm`): `id` (1), `description` (1), `citation` (1).
+**Component** (`mrl:LE_Algorithm`): `id` (1), `description` (1), `citation` (1), `codeOrigin` (0..1, §6.1).
+
+**Code origin** (no ISO element; §6.1)
+
+| Key | | Content |
+|---|---|---|
+| `kind` | 1 | `repository`, `package`, `file`, `archive`, `service` or `other` |
+| `source` | 1 | a URI: a repository URL with its commit (`git+https://…@<commit>`), a package spec (`pypi:name==1.2.0`, `conda:…`, `npm:…`), a `file:` path relative to a root the writer declares, an archive URL, a service endpoint |
+| `name` | 1 | what the code calls itself |
+| `version` | 0..1 | the source's own version string; `null` when it has none |
+| `contentHash` | 1 | `{algorithm, value, covers}`: `algorithm` `sha256` (64 hex) or `sha1` (40 hex); `covers` `file`, `directory`, `distribution` or `none` (no `value`; a service or a repository only) |
+| `license` | 1 | an SPDX licence expression, or `NOASSERTION` |
+| `citation` | 0..1 | free text or a DOI |
+| `editable` | 0..1 | `true` when the version may stay while the content changes (an editable install): the hash, not the version, is then authoritative |
 
 **Citation** (`cit:CI_Citation`): `title` (1), `edition` (0..1), `identifier` (0..*, `{code, codeSpace}`),
 `otherCitationDetails` (0..*, strings), `onlineResource` (0..*, `{linkage}`), `sha256` (0..1), `id` (0..1).
@@ -135,7 +154,8 @@ step, changing a setting the output does not read, and printing again; the recor
   follow as a second identifier with `codeSpace` `doi`.
 - A component used by several steps is written once and referenced by `id` afterwards.
 - Code the writer cannot pin by commit (a numerical backend, a renderer, a library, a remote service) is a
-  component cited by `title` and `edition`.
+  component cited by `title` and `edition`; from 0.2 the component may also carry a `codeOrigin` (§6.1) that
+  says, checkably, where that code came from.
 - The numerical backend is part of the method. A step that calls an FFT names the backend as a component with
   its version; its precision, and for FFTW the planner mode, go in that component's parameters. FFTW output is
   repeatable only with `FFTW_ESTIMATE` or saved plans (FFTW FAQ Q3.8).
@@ -203,6 +223,21 @@ step, changing a setting the output does not read, and printing again; the recor
   The patch is a source with `scope` `{"level": "software"}` and a `sourceCitation` with its file name and sha256.
   Every step whose code came from that tree lists the patch in its `source`. Replay = the commit plus the patch.
 
+### 6.1 Code origin
+
+- The commit form above stays the default and the fallback. `codeOrigin` covers code that form cannot name: a
+  file in a user folder, an installed package, a script, an archive, a remote service. It sits on a step (the
+  code that ran the step) or on a component (one piece the step used); a writer may emit both the commit form
+  and a `codeOrigin`.
+- `contentHash.covers` says what was hashed, so a reader knows a single-file hash does not cover what that
+  file imports: `file` (the file's bytes), `directory` (§3's directory hash), `distribution` (the installed
+  distribution's archive or record), `none` (a service, or a repository the commit alone names).
+- A reader checks the record (§9). With the code at hand, `gprv verify --code-root <dir>` recomputes a
+  `file:` origin's hash under that root and reports a match, a mismatch, or that the code is unavailable.
+- `gprv migrate` rewrites a 0.1 record whose `softwareReference` carries a repository URL and a full commit
+  into a 0.2 record with a `codeOrigin` of kind `repository` on each such step. It adds nothing it cannot
+  derive, writes a new record (the original stays verifiable), and leaves everything else as it was.
+
 ## 7. Starts and parents
 
 - **Declared start.** A source without `sourceMetadata`. Its `description` begins with what is known. Its
@@ -257,7 +292,10 @@ A record verifies when:
 - every mandatory key is present and every `id` is an XML name, unique in the record;
 - every string reference resolves to an object defined earlier in the record, and every step `source` names a
   source or an output of an earlier step;
-- the last step carries `stepDateTime`, and its outputs carry `sha256`.
+- the last step carries `stepDateTime`, and its outputs carry `sha256`;
+- every `codeOrigin` has a known `kind`, a `source` that is a URI, a `contentHash` whose algorithm is known
+  and whose value has that algorithm's length (or covers nothing, on a service or repository origin), and a
+  `license` that is an SPDX expression or `NOASSERTION`.
 
 With the files at hand, a verifier also checks the sha256 of every cited file. Replay is a separate tool.
 
@@ -282,9 +320,12 @@ With the files at hand, a verifier also checks the sha256 of every cited file. R
   | a resolved parent citation | `LI_Source/sourceStep` → the parent step that output the dataset |
   | the sink's `statement` | `mrl:statement` |
   | the assembly file | `additionalDocumentation`, with its sha256 |
+  | a step's `codeOrigin` | a second `mrl:softwareReference` citation: `title` = `name`, `edition` = `version`, `onlineResource` = `source`, `otherCitationDetails` = the hash and the licence as text |
+  | a component's `codeOrigin` | `otherCitationDetails` on the component's citation: source, version, hash and licence as text |
 
 - What the export loses: the `gprv` version, the ancestors' statements (`LI_Lineage` holds one), parameter
-  types, and the meaning of the hashes (ISO tools see opaque identifiers). Member boundaries survive as id
+  types, the meaning of the hashes (ISO tools see opaque identifiers), and the structure of a `codeOrigin`
+  (its kind, what the hash covers and the `editable` flag survive only as text). Member boundaries survive as id
   prefixes and member hashes as the `sourceMetadata` citations.
 
 ## 11. Privacy and network
@@ -296,7 +337,8 @@ With the files at hand, a verifier also checks the sha256 of every cited file. R
 
 ## 12. Later versions
 
-- **0.2:** the location block (camera position, feature position, orientation, each with how it was known:
+- **0.2** (this version) adds `codeOrigin` (§6.1). Still to come under 0.2: the execution-context block
+  (precision, backend, third-party components), the location block (camera position, feature position, orientation, each with how it was known:
   `device`, `derived`, `manual`, `reported`, `unknown`) on `scope`, and advisory records that flag a component's
   code range as wrong (OSV git ranges).
 - Anchoring: an OpenTimestamps proof beside the anchored file (`<file>.ots`); a record never contains its own proof.
@@ -313,7 +355,7 @@ Three ways to write the same format:
    and outcomes.
 3. **Integrate:** an application (GeoDynamix) mints at fork and export from its own resolved recipe.
 
-The library and CLI (`verify`, `show`, `assemble`, `export`; `run` to come) are MIT-licensed; GeoDynamix stays
+The library and CLI (`verify` with `--code-root`, `show`, `assemble`, `export`, `migrate`; `run` to come) are MIT-licensed; GeoDynamix stays
 GPL-2.0-or-later.
 
 ## Appendix A: worked example
