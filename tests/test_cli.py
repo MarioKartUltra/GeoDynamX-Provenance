@@ -135,3 +135,20 @@ def test_verify_without_a_code_root_says_nothing_about_code(tmp_path, capsys):
     rec = _origin_record(tmp_path, tmp_path, "a" * 64, "b" * 64)
     code_, out = run(capsys, "verify", rec)
     assert code_ == 0 and "code:" not in out
+
+
+# --------------------------------------------------------------------------- 0.2: migrate
+
+
+def test_migrate_writes_a_0_2_record_and_the_original_still_verifies(tmp_path, capsys):
+    d = stage(tmp_path, "fbm_roi.npz.gprv", "fbm_recon.tif.gprv")
+    code, out = run(capsys, "migrate", d / "fbm_recon.tif.gprv", "-o", d / "fbm_recon.tif.0.2.gprv")
+    assert code == 0 and "fbm_recon.tif.0.2.gprv" in out
+    data = (d / "fbm_recon.tif.0.2.gprv").read_bytes()
+    assert b'"gprv":"0.2"' in data and b'"kind":"repository"' in data
+    code, out = run(capsys, "verify", d / "fbm_recon.tif.0.2.gprv")
+    assert code == 0 and "VERIFIED" in out
+    code, out = run(capsys, "verify", d / "fbm_recon.tif.gprv")
+    assert code == 0 and "VERIFIED" in out
+    code, out = run(capsys, "migrate", d / "fbm_recon.tif.gprv", "-o", d / "fbm_recon.tif.0.2.gprv")
+    assert code == 2                                          # minted once: never overwritten

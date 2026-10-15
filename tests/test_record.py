@@ -226,3 +226,34 @@ def test_a_service_origin_may_carry_no_hash_value(child):
 def test_spdx_expressions_with_operators_and_exceptions_pass(child):
     for expr in ("MIT OR Apache-2.0", "GPL-2.0-or-later WITH Classpath-exception-2.0", "(MIT AND BSD-3-Clause) OR GPL-3.0-only"):
         assert check_obj(with_origins(child, step=origin(license=expr))) == [], expr
+
+
+# --------------------------------------------------------------------------- 0.2: migrate
+
+
+def test_migrate_turns_a_repository_software_reference_into_a_code_origin(child):
+    from gprv.record import migrate
+
+    out = migrate(child)
+    assert child["gprv"] == "0.1"                              # the input is left alone
+    assert out["gprv"] == "0.2" and check_obj(out) == []
+    o = out["processStep"][0]["codeOrigin"]
+    assert o == {"kind": "repository",
+                 "source": "git+https://github.com/MarioKartUltra/GeoDynamX@6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8",
+                 "name": "GeoDynamix", "version": "6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8",
+                 "contentHash": {"algorithm": "sha256", "covers": "none"}, "license": "NOASSERTION",
+                 "editable": False}
+    # a step citing the software by id gets the same origin; one without a software reference gets none
+    assert out["processStep"][1]["codeOrigin"] == o
+    assert "codeOrigin" not in out["processStep"][2] or out["processStep"][2]["codeOrigin"] == o
+    assert out["processStep"][0]["processingInformation"]["softwareReference"] == child["processStep"][0]["processingInformation"]["softwareReference"]
+
+
+def test_migrate_adds_nothing_it_cannot_derive(child):
+    from gprv.record import migrate
+
+    sw = child["processStep"][0]["processingInformation"]["softwareReference"]
+    sw["edition"] = "v1.2"                                    # a release, not a commit: nothing to derive
+    out = migrate(child)
+    assert out["gprv"] == "0.2" and all("codeOrigin" not in st for st in out["processStep"])
+    assert migrate(out) == out                                # idempotent on a 0.2 record

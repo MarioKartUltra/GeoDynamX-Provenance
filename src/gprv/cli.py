@@ -7,7 +7,7 @@ from pathlib import Path
 from .assembly import assemble, collect, load_store, verify
 from .canon import hash_directory, hash_file, sha256
 from .iso import export
-from .record import check, parse
+from .record import check, migrate, parse, write
 
 
 def plural(n, word):
@@ -160,6 +160,21 @@ def cmd_export(args):
     return 0
 
 
+def cmd_migrate(args):
+    path = Path(args.file)
+    data = path.read_bytes()
+    problems = check(data)
+    if problems:
+        print(f"{path}: FAILED")
+        for p in problems:
+            print(f"  {p}")
+        return 1
+    out = Path(args.output) if args.output else path.with_name(path.name[:-len(".gprv")] + ".0.2.gprv")
+    h = write(out, migrate(parse(data)))                      # minted once: an existing file is refused
+    print(f"{out}: sha256 {h}")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="gprv", description="Verify, show, assemble and export .gprv records.")
     sub = ap.add_subparsers(dest="command", required=True)
@@ -176,6 +191,10 @@ def main(argv=None):
     p.add_argument("--search", action="append", default=[], metavar="DIR", help="another folder of records")
     p.add_argument("-o", "--output")
     p.set_defaults(func=cmd_assemble)
+    p = sub.add_parser("migrate", help="a 0.2 copy of a 0.1 record: repository citations become codeOrigin")
+    p.add_argument("file")
+    p.add_argument("-o", "--output", help="the new record (default: <name>.0.2.gprv); never overwritten")
+    p.set_defaults(func=cmd_migrate)
     p = sub.add_parser("export", help="ISO 19115-3 lineage XML of a record or an assembly")
     p.add_argument("file")
     p.add_argument("-o", "--output")

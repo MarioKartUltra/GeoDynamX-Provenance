@@ -102,6 +102,41 @@ def parse(data: bytes):
     return json.loads(data, object_pairs_hook=pairs, parse_constant=constant)
 
 
+COMMIT = re.compile(r"^[0-9a-f]{40}$")
+
+
+def migrate(record: dict) -> dict:
+    """A 0.2 copy of ``record`` (§6.1): each step whose ``softwareReference`` cites a repository URL and
+    a full commit gains a ``codeOrigin`` of kind ``repository``; nothing else changes, nothing is
+    derived that the citation does not carry, and a step that already has an origin keeps it."""
+    import copy
+
+    out = copy.deepcopy(record)
+    citations = {}
+    for st in out.get("processStep", []):
+        for c in st.get("reference", []):
+            if isinstance(c, dict) and "id" in c:
+                citations[c["id"]] = c
+        p = st.get("processingInformation") or {}
+        sw = p.get("softwareReference")
+        if isinstance(sw, dict) and "id" in sw:
+            citations[sw["id"]] = sw
+        if isinstance(sw, str):
+            sw = citations.get(sw)
+        if "codeOrigin" in st or not isinstance(sw, dict):
+            continue
+        commit = sw.get("edition", "")
+        links = [r.get("linkage") for r in sw.get("onlineResource", []) if isinstance(r, dict)]
+        if not (isinstance(commit, str) and COMMIT.match(commit) and links and isinstance(links[0], str)):
+            continue
+        st["codeOrigin"] = {"kind": "repository", "source": f"git+{links[0]}@{commit}",
+                            "name": sw.get("title", links[0]), "version": commit,
+                            "contentHash": {"algorithm": "sha256", "covers": "none"},
+                            "license": "NOASSERTION", "editable": False}
+    out["gprv"] = "0.2"
+    return out
+
+
 def check(data: bytes) -> list:
     """Problems with a record's bytes; an empty list means the record verifies."""
     try:
