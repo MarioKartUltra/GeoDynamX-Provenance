@@ -6,13 +6,19 @@ from pathlib import Path
 
 from .canon import CanonicalError, canonical, normalize, sha256
 
-VERSIONS = {"0.1"}
+VERSIONS = {"0.1", "0.2"}
 
 RECORD = {"gprv", "statement", "source", "processStep"}
 SOURCE = {"id", "description", "sourceCitation", "sourceMetadata", "processedLevel", "scope"}
 STEP = {"id", "description", "stepDateTime", "reference", "source", "processingInformation", "report", "output"}
 PROCESSING = {"algorithm", "identifier", "softwareReference", "runTimeParameters"}
 COMPONENT = {"id", "description", "citation"}
+#: 0.2: a step and a component may say where their code came from (spec §6.1).
+CODE_ORIGIN = {"kind", "source", "name", "version", "contentHash", "license", "citation", "editable"}
+CONTENT_HASH = {"algorithm", "value", "covers"}
+KINDS = {"repository", "package", "file", "archive", "service", "other"}
+COVERS = {"file", "directory", "distribution", "none"}
+ALGORITHMS = {"sha256": 64, "sha1": 40}                   # name -> hex length of the value
 CITATION = {"id", "title", "edition", "identifier", "otherCitationDetails", "onlineResource", "sha256"}
 IDENTIFIER = {"code", "codeSpace"}
 ONLINE = {"linkage"}
@@ -23,11 +29,44 @@ SCOPE = {"level"}
 XML_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_.-]*$")       # xs:ID (an NCName), ASCII subset
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 UTC_INSTANT = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$")
+URI = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:\S+$")         # a scheme and a non-empty rest
+SPDX_ID = re.compile(r"^[A-Za-z0-9.+-]+$")
 
 
-def schema() -> dict:
-    """The record's JSON Schema (structure only; :func:`check` is the full test)."""
-    return json.loads((files("gprv") / "schema" / "gprv-0.1.schema.json").read_text())
+def spdx_ok(expr: str) -> bool:
+    """Whether ``expr`` reads as an SPDX licence expression: ids joined by AND / OR / WITH, parentheses
+    balanced, or the word NOASSERTION. The grammar, not the licence list, is what is checked."""
+    if expr == "NOASSERTION":
+        return True
+    tokens = expr.replace("(", " ( ").replace(")", " ) ").split()
+    if not tokens:
+        return False
+    depth, expect_id = 0, True
+    for tok in tokens:
+        if tok == "(":
+            if not expect_id:
+                return False
+            depth += 1
+        elif tok == ")":
+            if expect_id or depth == 0:
+                return False
+            depth -= 1
+        elif tok in ("AND", "OR", "WITH"):
+            if expect_id:
+                return False
+            expect_id = True
+        else:
+            if not expect_id or not SPDX_ID.match(tok):
+                return False
+            expect_id = False
+    return depth == 0 and not expect_id
+
+
+def schema(version: str = "0.2") -> dict:
+    """The record's JSON Schema for ``version`` (structure only; :func:`check` is the full test)."""
+    if version not in VERSIONS:
+        raise ValueError(f"unknown version {version!r}; known: {sorted(VERSIONS)}")
+    return json.loads((files("gprv") / "schema" / f"gprv-{version}.schema.json").read_text())
 
 
 class RecordError(ValueError):
@@ -86,6 +125,7 @@ class _Checker:
     def __init__(self):
         self.problems, self.ids = [], set()
         self.components, self.citations = set(), set()
+        self.version = "0.1"
 
     def bad(self, where, msg):
         self.problems.append(f"{where}: {msg}" if where else msg)
@@ -154,6 +194,8 @@ class _Checker:
             return self.problems
         if "gprv" in rec and rec["gprv"] not in VERSIONS:
             self.bad("gprv", f"unknown version {rec['gprv']!r}")
+        elif "gprv" in rec:
+            self.version = rec["gprv"]
         if "statement" in rec:
             self.string(rec["statement"], "statement")
         data = set()                                          # ids a step may read
@@ -183,9 +225,56 @@ class _Checker:
         if "scope" in s and s["scope"] != {"level": "software"}:
             self.bad(f"{where}.scope", 'only {"level": "software"} is defined in 0.1')
 
-    def step(self, st, where, data, last):
-        if not self.obj(st, where, STEP, ("id", "description")):
+    def keys_of(self, base: set) -> set:
+        """The keys an object may carry in this record's version: ``codeOrigin`` from 0.2 on."""
+        return base | {"codeOrigin"} if self.version != "0.1" else base
+
+    def code_origin(self, o, where):
+        """§6.1: where the code behind a step or a component came from."""
+        if not self.obj(o, where, CODE_ORIGIN, ("kind", "source", "name", "contentHash", "license")):
             return
+        if "kind" in o and o["kind"] not in KINDS:
+            self.bad(f"{where}.kind", f"unknown kind {o['kind']!r}; known: {sorted(KINDS)}")
+        if "source" in o and not (isinstance(o["source"], str) and URI.match(o["source"])):
+            self.bad(f"{where}.source", "not a URI (a scheme, a colon and a location)")
+        if "name" in o:
+            self.string(o["name"], f"{where}.name")
+        if "version" in o and o["version"] is not None and not isinstance(o["version"], str):
+            self.bad(f"{where}.version", "expected a string or null")
+        if "citation" in o:
+            self.string(o["citation"], f"{where}.citation")
+        if "editable" in o and not isinstance(o["editable"], bool):
+            self.bad(f"{where}.editable", "expected true or false")
+        if "license" in o and not (isinstance(o["license"], str) and spdx_ok(o["license"])):
+            self.bad(f"{where}.license", "not an SPDX licence expression (or NOASSERTION)")
+        if "contentHash" in o:
+            self.content_hash(o["contentHash"], f"{where}.contentHash", o.get("kind"))
+
+    def content_hash(self, h, where, kind):
+        if not self.obj(h, where, CONTENT_HASH, ("algorithm", "covers")):
+            return
+        algorithm, covers = h.get("algorithm"), h.get("covers")
+        if algorithm not in ALGORITHMS:
+            self.bad(f"{where}.algorithm", f"unknown algorithm {algorithm!r}; known: {sorted(ALGORITHMS)}")
+        if covers not in COVERS:
+            self.bad(f"{where}.covers", f"unknown covers {covers!r}; known: {sorted(COVERS)}")
+        if covers == "none":
+            if "value" in h:
+                self.bad(f"{where}.value", "a hash that covers nothing has no value")
+            if kind not in ("service", "repository"):
+                self.bad(f"{where}.covers", "only a service or a repository origin may cover nothing")
+            return
+        if "value" not in h:
+            self.bad(where, "missing 'value'")
+        elif algorithm in ALGORITHMS and not (isinstance(h["value"], str)
+                                               and re.fullmatch(r"[0-9a-f]{%d}" % ALGORITHMS[algorithm], h["value"])):
+            self.bad(f"{where}.value", f"not {ALGORITHMS[algorithm]} lowercase hex characters")
+
+    def step(self, st, where, data, last):
+        if not self.obj(st, where, self.keys_of(STEP), ("id", "description")):
+            return
+        if "codeOrigin" in st:
+            self.code_origin(st["codeOrigin"], f"{where}.codeOrigin")
         self.define(st.get("id"), where)
         if "description" in st:
             self.string(st["description"], f"{where}.description")
@@ -233,8 +322,10 @@ class _Checker:
             if isinstance(a, str):
                 if a not in self.components:
                     self.bad(aw, f"reference {a!r} names no component defined earlier")
-            elif self.obj(a, aw, COMPONENT, ("id", "description", "citation")):
+            elif self.obj(a, aw, self.keys_of(COMPONENT), ("id", "description", "citation")):
                 self.define(a.get("id"), aw)
+                if "codeOrigin" in a:
+                    self.code_origin(a["codeOrigin"], f"{aw}.codeOrigin")
                 if "description" in a:
                     self.string(a["description"], f"{aw}.description")
                 if "citation" in a:

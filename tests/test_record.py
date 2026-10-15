@@ -162,3 +162,67 @@ def test_write_refuses_an_invalid_record(tmp_path, child):
 def test_report_description_is_text_or_an_object(child):
     child["processStep"][1]["report"][0]["description"] = 3
     assert problems_mention(check_obj(child), "report[0].description")
+
+
+# --------------------------------------------------------------------------- 0.2: codeOrigin
+
+
+def origin(**changes) -> dict:
+    o = {"kind": "file", "source": "file:devices/ridge_filter.py", "name": "ridge_filter", "version": "1.2.0",
+         "contentHash": {"algorithm": "sha256", "value": "a" * 64, "covers": "file"},
+         "license": "MIT", "editable": False}
+    for k, v in changes.items():
+        if v is None:
+            o.pop(k, None)
+        else:
+            o[k] = v
+    return o
+
+
+def with_origins(child, step=None, component=None) -> dict:
+    """The child example as a 0.2 record, a codeOrigin on step p1 and on its first component."""
+    child["gprv"] = "0.2"
+    p1 = child["processStep"][0]
+    p1["codeOrigin"] = step if step is not None else origin()
+    p1["processingInformation"]["algorithm"][0]["codeOrigin"] = component if component is not None else origin(
+        kind="package", source="pypi:ridge-tools==1.2.0",
+        contentHash={"algorithm": "sha256", "value": "b" * 64, "covers": "distribution"})
+    return child
+
+
+def test_a_0_2_record_with_code_origins_on_a_step_and_a_component_verifies(child):
+    assert check_obj(with_origins(child)) == []
+
+
+def test_code_origin_is_unknown_in_a_0_1_record(child):
+    child["processStep"][0]["codeOrigin"] = origin()
+    assert any("unknown key 'codeOrigin'" in p for p in check_obj(child))
+
+
+@pytest.mark.parametrize("bad, word", [
+    (dict(kind="plugin"), "kind"),
+    (dict(source="devices/ridge_filter.py"), "source"),
+    (dict(contentHash={"algorithm": "sha256", "value": "a" * 40, "covers": "file"}), "64"),
+    (dict(contentHash={"algorithm": "md5", "value": "a" * 32, "covers": "file"}), "algorithm"),
+    (dict(contentHash={"algorithm": "sha256", "value": "a" * 64, "covers": "tree"}), "covers"),
+    (dict(contentHash={"algorithm": "sha256", "covers": "file"}), "value"),
+    (dict(license="MIT OR"), "license"),
+    (dict(license="Proprietary!"), "license"),
+    (dict(editable="no"), "editable"),
+    (dict(name=None), "name"),
+    (dict(glow="x"), "glow"),
+])
+def test_a_bad_code_origin_is_reported_by_its_field(child, bad, word):
+    problems = check_obj(with_origins(child, step=origin(**bad)))
+    assert problems and all("codeOrigin" in p for p in problems) and any(word in p for p in problems)
+
+
+def test_a_service_origin_may_carry_no_hash_value(child):
+    svc = origin(kind="service", source="https://api.example.org/v2/ridge", version=None,
+                 contentHash={"algorithm": "sha256", "covers": "none"}, license="NOASSERTION")
+    assert check_obj(with_origins(child, step=svc)) == []
+
+
+def test_spdx_expressions_with_operators_and_exceptions_pass(child):
+    for expr in ("MIT OR Apache-2.0", "GPL-2.0-or-later WITH Classpath-exception-2.0", "(MIT AND BSD-3-Clause) OR GPL-3.0-only"):
+        assert check_obj(with_origins(child, step=origin(license=expr))) == [], expr
