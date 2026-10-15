@@ -74,6 +74,27 @@ class _Writer:
               for r in c.get("onlineResource", [])]
         return o + [f"{ind}</cit:CI_Citation>"]
 
+    @staticmethod
+    def origin_details(o) -> list:
+        """A code origin as citation text (§10): its kind, its hash and what it covers, its licence."""
+        h = o.get("contentHash", {})
+        hashed = f"{h.get('algorithm', '')} {h['value']} ({h.get('covers', '')})" if "value" in h \
+            else f"{h.get('algorithm', '')} ({h.get('covers', '')})"
+        details = [f"kind {o.get('kind', '')}", hashed, f"license {o.get('license', '')}"]
+        if o.get("citation"):
+            details.append(o["citation"])
+        if o.get("editable"):
+            details.append("editable")
+        return details
+
+    def origin_citation(self, o) -> dict:
+        """A step's code origin as a second software reference (§10)."""
+        c = {"title": o.get("name", ""), "otherCitationDetails": self.origin_details(o),
+             "onlineResource": [{"linkage": o.get("source", "")}]}
+        if o.get("version") is not None:
+            c["edition"] = o["version"]
+        return c
+
     def wrapped(self, tag, c, ind, member):
         if isinstance(c, str):
             return [f'{ind}<{tag} xlink:href="#{self.ref(member, c)}"/>']
@@ -128,13 +149,21 @@ class _Writer:
                 if isinstance(a, str):
                     o.append(f'{J}<mrl:algorithm xlink:href="#{self.ref(h, a)}"/>')
                     continue
+                cit = a["citation"]
+                if "codeOrigin" in a:                       # the origin rides the component's citation
+                    cit = dict(cit, otherCitationDetails=list(cit.get("otherCitationDetails", []))
+                               + [f"source {a['codeOrigin'].get('source', '')}"]
+                               + ([f"version {a['codeOrigin']['version']}"] if a["codeOrigin"].get("version") is not None else [])
+                               + self.origin_details(a["codeOrigin"]))
                 o += [f'{J}<mrl:algorithm><mrl:LE_Algorithm id="{self.pid(h, a["id"])}">', f"{J}  <mrl:citation>"] + \
-                     self.citation(a["citation"], J + "    ", h) + \
+                     self.citation(cit, J + "    ", h) + \
                      [f"{J}  </mrl:citation>", text("mrl:description", a["description"], J + "  "),
                       f"{J}</mrl:LE_Algorithm></mrl:algorithm>"]
             o.append(f"{J}<mrl:identifier>{md_identifier(p['identifier'])}</mrl:identifier>")
             if "softwareReference" in p:
                 o += self.wrapped("mrl:softwareReference", p["softwareReference"], J, h)
+            if "codeOrigin" in st:
+                o += self.wrapped("mrl:softwareReference", self.origin_citation(st["codeOrigin"]), J, h)
             if "runTimeParameters" in p:
                 o.append(text("mrl:runTimeParameters", json_text(p["runTimeParameters"]), J))
             o.append(f"{I}  </mrl:LE_Processing></mrl:processingInformation>")

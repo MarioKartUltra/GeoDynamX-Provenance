@@ -88,3 +88,34 @@ def test_a_single_record_export_cites_the_record_and_its_own_hash():
     data = (EXAMPLES / "boem_roi.npz.gprv").read_bytes()
     xml = export(data + b"\n", "boem_roi.npz.gprv", documented=sha256(data))
     assert f"<gco:CharacterString>{sha256(data)}</gco:CharacterString>" in xml
+
+
+# --------------------------------------------------------------------------- 0.2: codeOrigin
+
+
+def exported_with_origins():
+    from test_record import with_origins
+
+    rec = with_origins(example("fbm_recon.tif.gprv"))
+    return export(assemble([(EXAMPLES / "fbm_roi.npz.gprv").read_bytes(), canonical(rec)]), "x.gprv.jsonl")
+
+
+def test_a_step_origin_exports_as_a_second_software_reference():
+    xml = exported_with_origins()
+    assert xml.count("<mrl:softwareReference>") >= 2
+    assert "<cit:title><gco:CharacterString>ridge_filter</gco:CharacterString></cit:title>" in xml
+    assert "<cit:edition><gco:CharacterString>1.2.0</gco:CharacterString></cit:edition>" in xml
+    assert "file:devices/ridge_filter.py" in xml
+    assert "sha256 " + "a" * 64 + " (file)" in xml and "license MIT" in xml and "kind file" in xml
+
+
+def test_a_component_origin_exports_as_citation_details():
+    xml = exported_with_origins()
+    i = xml.index("LastWave FIR bank")
+    tail = xml[i:i + 1500]
+    assert "pypi:ridge-tools==1.2.0" in tail and "sha256 " + "b" * 64 + " (distribution)" in tail
+
+
+@needs_schemas
+def test_a_0_2_export_validates_against_19115_3():
+    validate_or_skip(exported_with_origins(), "2.0")
