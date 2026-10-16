@@ -5,7 +5,9 @@ bytes, and for each step its code (in-code identifier and git commit), its param
 canonical JSON (RFC 8785) keyed by ISO 19115-3 lineage names; a record written at a fork cites its parent by
 sha256, and an assembly packages one product's branch for sharing.
 
-- The format: [`spec/gprv-0.1.md`](spec/gprv-0.1.md); worked records in [`spec/examples/`](spec/examples/).
+- The format: [`spec/gprv-0.2.md`](spec/gprv-0.2.md) (0.2 adds a step's code origin and execution context;
+  a reader accepts 0.1 records, [`spec/gprv-0.1.md`](spec/gprv-0.1.md)); worked records in
+  [`spec/examples/`](spec/examples/).
 - The library: [`src/gprv/`](src/gprv/), with its tests in [`tests/`](tests/).
 
 ## The library
@@ -39,4 +41,4 @@ those tests are skipped.
 
 ## License
 
-The library code is MIT (`LICENSE`). The spec, `spec/gprv-0.1.md`, is CC BY 4.0.
+The library code is MIT (`LICENSE`). The specs, `spec/gprv-0.1.md` and `spec/gprv-0.2.md`, are CC BY 4.0.
