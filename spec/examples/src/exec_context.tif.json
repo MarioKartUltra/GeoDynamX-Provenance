@@ -1,0 +1,258 @@
+{
+ "gprv": "0.2",
+ "statement": "The fbm_recon.tif record rewritten as gprv 0.2: each step says how it ran (precision, libraries, platform), and the LastWave bank is a third-party component with its code origin.",
+ "source": [
+  {
+   "id": "s1",
+   "description": "The forked dataset fbm_roi.npz.",
+   "sourceCitation": {
+    "title": "fbm_roi.npz",
+    "sha256": "5ef928efdec603cb6df541fb750261950914c6077651e2be811285d0b4ee9991"
+   },
+   "sourceMetadata": [
+    {
+     "title": "fbm_roi.npz.gprv",
+     "sha256": "PARENT_HASH"
+    }
+   ]
+  }
+ ],
+ "processStep": [
+  {
+   "id": "p1",
+   "description": "Dyadic wavelet modulus maxima, LastWave dwtrans2d port, J=4, mirror border.",
+   "source": [
+    "s1"
+   ],
+   "output": [
+    {
+     "id": "d1"
+    }
+   ],
+   "processingInformation": {
+    "algorithm": [
+     {
+      "id": "lw_bank",
+      "description": "FIR analysis/synthesis bank, bit for bit with LastWave convol2.c",
+      "citation": {
+       "title": "LastWave FIR bank",
+       "identifier": [
+        {
+         "code": "mz_lastwave.fir_bank",
+         "codeSpace": "geodynamix"
+        }
+       ]
+      },
+      "codeOrigin": {
+       "kind": "repository",
+       "source": "git+https://github.com/MarioKartUltra/GeoDynamX@6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8",
+       "name": "mz_lastwave",
+       "version": "6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8",
+       "contentHash": {
+        "algorithm": "sha256",
+        "covers": "none"
+       },
+       "license": "GPL-2.0-or-later",
+       "citation": "Port of LastWave dwtrans2d 2.1 (E. Bacry, J. Fraleu, J. Kalifa, E. Le Pennec, W. L. Hwang, S. Mallat, S. Zhong), bit for bit with its C on square fields",
+       "editable": false
+      }
+     },
+     {
+      "id": "ext2",
+      "description": "modulus maxima detection, LastWave extrema2",
+      "citation": {
+       "title": "extrema2",
+       "identifier": [
+        {
+         "code": "mz_lastwave.extrema2",
+         "codeSpace": "geodynamix"
+        },
+        {
+         "code": "10.1109/34.142909",
+         "codeSpace": "doi"
+        }
+       ]
+      }
+     }
+    ],
+    "identifier": {
+     "code": "mz_edges/edges",
+     "codeSpace": "geodynamix"
+    },
+    "softwareReference": {
+     "id": "gdx",
+     "title": "GeoDynamix",
+     "edition": "6194b86e5859cf5a4a0d68f8425b8ac8d86d2df8",
+     "otherCitationDetails": [
+      "python 3.12.13",
+      "numpy 2.4.3"
+     ],
+     "onlineResource": [
+      {
+       "linkage": "https://github.com/MarioKartUltra/GeoDynamX"
+      }
+     ]
+    },
+    "runTimeParameters": {
+     "lw_bank": {
+      "border": "mirror",
+      "n_levels": 4
+     }
+    }
+   },
+   "executionContext": {
+    "precision": "float64",
+    "libraries": {
+     "python": "3.12.13",
+     "numpy": "2.4.3",
+     "numba": "0.62.1"
+    },
+    "platform": "macOS-14.5-arm64",
+    "thirdParty": [
+     {
+      "component": "lw_bank"
+     }
+    ]
+   }
+  },
+  {
+   "id": "p2",
+   "description": "Reconstruction from all maxima: LastWave alternating projections, run to convergence.",
+   "source": [
+    "d1"
+   ],
+   "output": [
+    {
+     "id": "d2"
+    }
+   ],
+   "processingInformation": {
+    "algorithm": [
+     "lw_bank",
+     {
+      "id": "lw_proj",
+      "description": "alternating projections, LastWave ext2_proj.c",
+      "citation": {
+       "title": "Alternating projections",
+       "identifier": [
+        {
+         "code": "mz_lastwave.ext2_proj",
+         "codeSpace": "geodynamix"
+        }
+       ]
+      }
+     },
+     {
+      "id": "w2",
+      "description": "P_Gamma: W2_interp sinh interpolation between anchors",
+      "citation": {
+       "title": "W2_interp",
+       "identifier": [
+        {
+         "code": "mz_lastwave.w2_interp",
+         "codeSpace": "geodynamix"
+        }
+       ]
+      }
+     },
+     {
+      "id": "stop",
+      "description": "stop at relative change < tolerance, residual rising 3 times running, or the cap",
+      "citation": {
+       "title": "Converge stop rule",
+       "identifier": [
+        {
+         "code": "mz_lastwave.converge_stop",
+         "codeSpace": "geodynamix"
+        }
+       ]
+      }
+     }
+    ],
+    "identifier": {
+     "code": "mz_edges/recon",
+     "codeSpace": "geodynamix"
+    },
+    "softwareReference": "gdx",
+    "runTimeParameters": {
+     "stop": {
+      "iterations": 20,
+      "run_mode": "converge",
+      "tolerance": 0.001
+     },
+     "w2": {
+      "clip": false,
+      "kappa": 1
+     }
+    }
+   },
+   "report": [
+    {
+     "name": "outcome",
+     "description": {
+      "lw_proj": {
+       "residual": 0.0097
+      },
+      "snr_db": 29.1,
+      "stop": {
+       "iterations": 12,
+       "reason": "converged",
+       "returned": 12
+      }
+     }
+    }
+   ],
+   "executionContext": {
+    "precision": "float64",
+    "libraries": {
+     "python": "3.12.13",
+     "numpy": "2.4.3",
+     "numba": "0.62.1"
+    },
+    "platform": "macOS-14.5-arm64",
+    "thirdParty": [
+     {
+      "component": "lw_bank"
+     }
+    ]
+   }
+  },
+  {
+   "id": "p3",
+   "description": "Export to GeoTIFF.",
+   "stepDateTime": "2026-10-01T16:41:07Z",
+   "source": [
+    "d2"
+   ],
+   "output": [
+    {
+     "id": "o1",
+     "sourceCitation": {
+      "title": "fbm_recon.tif",
+      "sha256": "981ea82a0b40bf14f4b13ae5cd1cdc7cdb80ebf635db362cbbb42c67f2c9e398"
+     }
+    }
+   ],
+   "processingInformation": {
+    "identifier": {
+     "code": "export/geotiff",
+     "codeSpace": "geodynamix"
+    },
+    "softwareReference": "gdx",
+    "runTimeParameters": {
+     "compress": "deflate",
+     "dtype": "float32",
+     "nodata": "NaN"
+    }
+   },
+   "executionContext": {
+    "precision": "float32",
+    "libraries": {
+     "python": "3.12.13",
+     "rasterio": "1.4.3"
+    },
+    "platform": "macOS-14.5-arm64"
+   }
+  }
+ ]
+}

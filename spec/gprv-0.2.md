@@ -61,8 +61,8 @@ user works is the application's business.
 4. A string where the schema expects an object is a reference to the object with that `id`
    (`xlink:href="#id"`). The referenced object is defined in an earlier step, or earlier in the same list.
 5. Everything mandatory in ISO is mandatory here, so the exported XML is valid by construction.
-6. Three keys have no ISO element: `gprv` (the format version), `sha256` (allowed on any citation) and
-   `codeOrigin` (allowed on a step and on a component, §6.1).
+6. Four keys have no ISO element: `gprv` (the format version), `sha256` (allowed on any citation),
+   `codeOrigin` (allowed on a step and on a component, §6.1) and `executionContext` (on a step, §6.2).
 7. Arrays keep their order, and the order is part of the hash.
 
 ### 4.2 Objects
@@ -100,6 +100,7 @@ user works is the application's business.
 | `report` | 0..* | `{name, description}`; `name` = `outcome` for the outcome (§5.6) |
 | `output` | 0..* | `{id, sourceCitation}`; the citation (title and `sha256`) only when the output is a file |
 | `codeOrigin` | 0..1 | where the step's code came from, when the commit form of §6 cannot name it (§6.1) |
+| `executionContext` | 0..1 | how the step ran: precision, backend, libraries, platform, third-party components (§6.2) |
 
 **Processing** (`mrl:LE_Processing`)
 
@@ -238,6 +239,35 @@ step, changing a setting the output does not read, and printing again; the recor
   into a 0.2 record with a `codeOrigin` of kind `repository` on each such step. It adds nothing it cannot
   derive, writes a new record (the original stays verifiable), and leaves everything else as it was.
 
+### 6.2 Execution context
+
+A step may say how it ran, beside what ran it. The 0.1 forms stay valid (§5.3: the FFT backend as a component
+with its version, precision and planner mode in its parameters; §6: interpreter and library versions as text in
+`softwareReference.otherCitationDetails`); a writer may emit them and this block together.
+
+```json
+"executionContext": {
+  "precision": "float32",
+  "backend": {"name": "fftw", "version": "3.3.10", "planner": "FFTW_ESTIMATE", "binding": "pyfftw 0.14.0"},
+  "fallback": "mlx has no double FFT; using FFTW3 double",
+  "libraries": {"python": "3.12.7", "numpy": "2.1.3", "numba": "0.60.0", "mlx": null},
+  "platform": "macOS-14.5-arm64",
+  "thirdParty": [{"component": "tj"}]
+}
+```
+
+| Key | | Content |
+|---|---|---|
+| `precision` | 0..1 | `float32` or `float64`, the precision the step computed in |
+| `backend` | 0..1 | `{name, version, planner, binding}`; `name` (1) is `fftw`, `mlx`, `cuda` or `numpy`, the rest text or null |
+| `fallback` | 0..1 | text: why the step ran on another backend or precision than asked |
+| `libraries` | 0..1 | library name → version text, or null for one that was not loaded; any names |
+| `platform` | 0..1 | text: the operating system and architecture |
+| `thirdParty` | 0..* | `{component}`: a component of this step (defined in it or referenced by it) whose `codeOrigin` (§6.1) carries the third-party code's origin, version, licence and citation |
+
+The block sits on the step it describes, one per step. It has no ISO element (§4.1 rule 6); the export
+writes it as text (§10).
+
 ## 7. Starts and parents
 
 - **Declared start.** A source without `sourceMetadata`. Its `description` begins with what is known. Its
@@ -295,9 +325,13 @@ A record verifies when:
 - the last step carries `stepDateTime`, and its outputs carry `sha256`;
 - every `codeOrigin` has a known `kind`, a `source` that is a URI, a `contentHash` whose algorithm is known
   and whose value has that algorithm's length (or covers nothing, on a service or repository origin), and a
-  `license` that is an SPDX expression or `NOASSERTION`.
+  `license` that is an SPDX expression or `NOASSERTION`;
+- every `executionContext` holds only the keys of §6.2 and at least one, a known `precision` and backend
+  `name`, versions as text or null, and `thirdParty` entries that each name a component of that step carrying a
+  `codeOrigin`.
 
-With the files at hand, a verifier also checks the sha256 of every cited file. Replay is a separate tool.
+A verifier reports the versions of the records it checked. With the files at hand, it also checks the sha256
+of every cited file. Replay is a separate tool.
 
 ## 10. ISO 19115-3 export
 
@@ -322,11 +356,14 @@ With the files at hand, a verifier also checks the sha256 of every cited file. R
   | the assembly file | `additionalDocumentation`, with its sha256 |
   | a step's `codeOrigin` | a citation with `title` = `name`, `edition` = `version`, `onlineResource` = `source`, `otherCitationDetails` = the kind, the hash and the licence as text: `mrl:softwareReference` when the step cites no code base, else `mrl:documentation` (19115-3 allows one software reference) |
   | a component's `codeOrigin` | `otherCitationDetails` on the component's citation: source, version, hash and licence as text |
+  | a step's `executionContext` | its RFC 8785 text in `LE_Processing.runTimeParameters` as `{"executionContext": …, "parameters": …}`, the step's own parameters under `parameters`; a step without the block exports its parameters as in 0.1 |
 
 - What the export loses: the `gprv` version, the ancestors' statements (`LI_Lineage` holds one), parameter
   types, the meaning of the hashes (ISO tools see opaque identifiers), and the structure of a `codeOrigin`
-  (its kind, what the hash covers and the `editable` flag survive only as text). Member boundaries survive as id
-  prefixes and member hashes as the `sourceMetadata` citations.
+  (its kind, what the hash covers and the `editable` flag survive only as text), the structure of an
+  `executionContext` (text only), and an `executionContext` on a step without `processingInformation` (there is
+  no `LE_Processing` to carry it). Member boundaries survive as id prefixes and member hashes as the
+  `sourceMetadata` citations.
 
 ## 11. Privacy and network
 
@@ -337,8 +374,8 @@ With the files at hand, a verifier also checks the sha256 of every cited file. R
 
 ## 12. Later versions
 
-- **0.2** (this version) adds `codeOrigin` (§6.1). Still to come under 0.2: the execution-context block
-  (precision, backend, third-party components), the location block (camera position, feature position, orientation, each with how it was known:
+- **0.2** (this version) adds `codeOrigin` (§6.1) and `executionContext` (§6.2). Still to come under 0.2: the
+  location block (camera position, feature position, orientation, each with how it was known:
   `device`, `derived`, `manual`, `reported`, `unknown`) on `scope`, and advisory records that flag a component's
   code range as wrong (OSV git ranges).
 - Anchoring: an OpenTimestamps proof beside the anchored file (`<file>.ots`); a record never contains its own proof.
@@ -371,6 +408,8 @@ are illustrative and the outcome numbers made up. The ISO exports validate again
 | `fbm_recon.png.gprv` | `a3656abec0d9` | sibling: the same chain from a patched tree, rendered |
 | `boem_roi.npz.gprv` | `703ec3d3b576` | six reported BOEM steps, then a GeoDynamix window and fork |
 | `fbm_recon.tif.gprv.jsonl` | `a2fe1db326fb` | assembly of the parent and the child: VERIFIED |
+| `code_origin.npz.gprv` | `d8b871bcc76b` | 0.2: one `codeOrigin` of every kind, on steps and components |
+| `exec_context.tif.gprv` | `92ee8c1373ca` | 0.2: the child rewritten with an `executionContext` on every step; the LastWave bank a third-party component with its `codeOrigin` |
 
 The negative cases give: the parent and both children with no product, FAILED (2 sinks); the parent edited
 (`x0` 256 → 257), FAILED (2 sinks, one gap); the child alone, VERIFIED with one gap.
