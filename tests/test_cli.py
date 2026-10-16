@@ -152,3 +152,13 @@ def test_migrate_writes_a_0_2_record_and_the_original_still_verifies(tmp_path, c
     assert code == 0 and "VERIFIED" in out
     code, out = run(capsys, "migrate", d / "fbm_recon.tif.gprv", "-o", d / "fbm_recon.tif.0.2.gprv")
     assert code == 2                                          # minted once: never overwritten
+
+
+def test_verify_reports_the_versions_it_checked(capsys):
+    from conftest import EXAMPLES
+    from gprv.cli import main
+
+    assert main(["verify", str(EXAMPLES / "exec_context.tif.gprv.jsonl")]) == 0
+    assert "gprv 0.1 and 0.2" in capsys.readouterr().out          # a 0.1 parent, a 0.2 child
+    assert main(["verify", str(EXAMPLES / "fbm_roi.npz.gprv")]) == 0
+    assert capsys.readouterr().out.rstrip().endswith("gprv 0.1)")

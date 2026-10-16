@@ -166,7 +166,13 @@ class _Writer:
             if "codeOrigin" in st:                          # 19115-3 allows one softwareReference
                 tag = "mrl:documentation" if "softwareReference" in p else "mrl:softwareReference"
                 o += self.wrapped(tag, self.origin_citation(st["codeOrigin"]), J, h)
-            if "runTimeParameters" in p:
+            ctx = st.get("executionContext")                # 0.2: rides runTimeParameters as text
+            if ctx is not None:
+                both = {"executionContext": ctx}
+                if "runTimeParameters" in p:
+                    both["parameters"] = p["runTimeParameters"]
+                o.append(text("mrl:runTimeParameters", json_text(both), J))
+            elif "runTimeParameters" in p:
                 o.append(text("mrl:runTimeParameters", json_text(p["runTimeParameters"]), J))
             o.append(f"{I}  </mrl:LE_Processing></mrl:processingInformation>")
         for r in st.get("report", []):

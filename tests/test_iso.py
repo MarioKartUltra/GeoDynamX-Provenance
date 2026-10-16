@@ -6,7 +6,7 @@ from gprv.assembly import assemble
 from gprv.canon import canonical, sha256
 from gprv.iso import export
 
-PRODUCTS = ["fbm_recon.tif", "fbm_recon.png", "boem_roi.npz", "code_origin.npz"]
+PRODUCTS = ["fbm_recon.tif", "fbm_recon.png", "boem_roi.npz", "code_origin.npz", "exec_context.tif"]
 
 
 def exported(name):
@@ -120,3 +120,12 @@ def test_a_component_origin_exports_as_citation_details():
 @pytest.mark.parametrize("version", ["2.0", "1.0"])
 def test_a_0_2_export_validates_against_19115_3(version):
     assert validate_or_skip(exported_with_origins(), version) == []
+
+
+def test_an_execution_context_rides_run_time_parameters_beside_the_parameters():
+    """19115-3 has no element for it: the block is text in LE_Processing.runTimeParameters, the
+    step's own parameters beside it under "parameters"; a step without a context exports as before."""
+    xml = exported("exec_context.tif")
+    assert '{"executionContext":{"libraries":{"numba":"0.62.1"' in xml
+    assert '"parameters":{"lw_bank":{"border":"mirror","n_levels":4}}' in xml
+    assert '{"executionContext"' not in exported("fbm_recon.tif")

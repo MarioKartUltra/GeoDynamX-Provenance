@@ -96,8 +96,9 @@ def cmd_verify(args):
             for p in problems:
                 print(f"  {p}")
             continue
+        versions = sorted({str(rec.get("gprv")) for rec in v.members.values() if isinstance(rec, dict)})
         print(f"{path}: VERIFIED ({plural(len(v.members), 'member')}, {plural(len(v.gaps), 'gap')}, "
-              f"{plural(checked, 'file')} checked)")
+              f"{plural(checked, 'file')} checked; gprv {' and '.join(versions)})")
         for line in code_lines:
             print(line)
         for g in v.gaps:
