@@ -288,6 +288,9 @@
     },
     "codeOrigin": {
      "$ref": "#/$defs/codeOrigin"
+    },
+    "executionContext": {
+     "$ref": "#/$defs/executionContext"
     }
    }
   },
@@ -364,6 +367,84 @@
     },
     "editable": {
      "type": "boolean"
+    }
+   }
+  },
+  "executionContext": {
+   "type": "object",
+   "additionalProperties": false,
+   "minProperties": 1,
+   "properties": {
+    "precision": {
+     "enum": [
+      "float32",
+      "float64"
+     ]
+    },
+    "backend": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "name"
+     ],
+     "properties": {
+      "name": {
+       "enum": [
+        "fftw",
+        "mlx",
+        "cuda",
+        "numpy"
+       ]
+      },
+      "version": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "planner": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "binding": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "fallback": {
+     "type": "string"
+    },
+    "libraries": {
+     "type": "object",
+     "additionalProperties": {
+      "type": [
+       "string",
+       "null"
+      ]
+     }
+    },
+    "platform": {
+     "type": "string"
+    },
+    "thirdParty": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+       "component"
+      ],
+      "properties": {
+       "component": {
+        "$ref": "#/$defs/id"
+       }
+      }
+     }
     }
    }
   }

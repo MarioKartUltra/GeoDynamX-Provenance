@@ -17,6 +17,12 @@ COMPONENT = {"id", "description", "citation"}
 CODE_ORIGIN = {"kind", "source", "name", "version", "contentHash", "license", "citation", "editable"}
 CONTENT_HASH = {"algorithm", "value", "covers"}
 KINDS = {"repository", "package", "file", "archive", "service", "other"}
+#: 0.2: how a step ran (spec §6.2).
+EXECUTION_CONTEXT = {"precision", "backend", "fallback", "libraries", "platform", "thirdParty"}
+BACKEND = {"name", "version", "planner", "binding"}
+PRECISIONS = {"float32", "float64"}
+BACKENDS = {"fftw", "mlx", "cuda", "numpy"}
+THIRD_PARTY = {"component"}
 COVERS = {"file", "directory", "distribution", "none"}
 ALGORITHMS = {"sha256": 64, "sha1": 40}                   # name -> hex length of the value
 CITATION = {"id", "title", "edition", "identifier", "otherCitationDetails", "onlineResource", "sha256"}
@@ -160,6 +166,7 @@ class _Checker:
     def __init__(self):
         self.problems, self.ids = [], set()
         self.components, self.citations = set(), set()
+        self.origin_components = set()                    # components that carry a codeOrigin
         self.version = "0.1"
 
     def bad(self, where, msg):
@@ -306,7 +313,8 @@ class _Checker:
             self.bad(f"{where}.value", f"not {ALGORITHMS[algorithm]} lowercase hex characters")
 
     def step(self, st, where, data, last):
-        if not self.obj(st, where, self.keys_of(STEP), ("id", "description")):
+        allowed = self.keys_of(STEP) | ({"executionContext"} if self.version != "0.1" else set())
+        if not self.obj(st, where, allowed, ("id", "description")):
             return
         if "codeOrigin" in st:
             self.code_origin(st["codeOrigin"], f"{where}.codeOrigin")
@@ -325,8 +333,11 @@ class _Checker:
         for i, ref in enumerate(self.array(st.get("source", []), f"{where}.source")):
             if ref not in data:
                 self.bad(f"{where}.source[{i}]", f"{ref!r} names no source and no output of an earlier step")
+        in_step = set()
         if "processingInformation" in st:
-            self.processing(st["processingInformation"], f"{where}.processingInformation")
+            in_step = self.processing(st["processingInformation"], f"{where}.processingInformation")
+        if "executionContext" in st:
+            self.execution_context(st["executionContext"], f"{where}.executionContext", in_step)
         for i, r in enumerate(self.array(st.get("report", []), f"{where}.report")):
             if self.obj(r, f"{where}.report[{i}]", REPORT, ("name",)):
                 if "name" in r:
@@ -349,18 +360,25 @@ class _Checker:
             if isinstance(o, dict) and "id" in o:
                 data.add(o["id"])
 
-    def processing(self, p, where):
+    def processing(self, p, where) -> set:
+        """Checks ``p``; returns the ids of the components this step uses (defined or referenced)."""
+        used = set()
         if not self.obj(p, where, PROCESSING, ("identifier",)):
-            return
+            return used
         for i, a in enumerate(self.array(p.get("algorithm", []), f"{where}.algorithm")):
             aw = f"{where}.algorithm[{i}]"
             if isinstance(a, str):
                 if a not in self.components:
                     self.bad(aw, f"reference {a!r} names no component defined earlier")
+                used.add(a)
             elif self.obj(a, aw, self.keys_of(COMPONENT), ("id", "description", "citation")):
                 self.define(a.get("id"), aw)
                 if "codeOrigin" in a:
                     self.code_origin(a["codeOrigin"], f"{aw}.codeOrigin")
+                    if isinstance(a.get("id"), str):
+                        self.origin_components.add(a["id"])
+                if isinstance(a.get("id"), str):
+                    used.add(a["id"])
                 if "description" in a:
                     self.string(a["description"], f"{aw}.description")
                 if "citation" in a:
@@ -377,3 +395,42 @@ class _Checker:
             self.citation(sw, f"{where}.softwareReference")
         if "runTimeParameters" in p and not isinstance(p["runTimeParameters"], dict):
             self.bad(f"{where}.runTimeParameters", "expected an object")
+        return used
+
+    def execution_context(self, c, where, in_step: set):
+        """§6.2: the precision, backend, libraries and platform a step ran with, and the third-party
+        components it ran (each a component of this step that carries a ``codeOrigin``)."""
+        if not self.obj(c, where, EXECUTION_CONTEXT):
+            return
+        if not c:
+            self.bad(where, "an empty execution context says nothing")
+        if "precision" in c and c["precision"] not in PRECISIONS:
+            self.bad(f"{where}.precision", f"unknown precision {c['precision']!r}; known: {sorted(PRECISIONS)}")
+        if "backend" in c:
+            b, bw = c["backend"], f"{where}.backend"
+            if self.obj(b, bw, BACKEND, ("name",)):
+                if "name" in b and b["name"] not in BACKENDS:
+                    self.bad(f"{bw}.name", f"unknown backend {b['name']!r}; known: {sorted(BACKENDS)}")
+                for k in ("version", "planner", "binding"):
+                    if k in b and b[k] is not None and not isinstance(b[k], str):
+                        self.bad(f"{bw}.{k}", "expected a string or null")
+        for k in ("fallback", "platform"):
+            if k in c:
+                self.string(c[k], f"{where}.{k}")
+        if "libraries" in c:
+            libs = c["libraries"]
+            if not isinstance(libs, dict):
+                self.bad(f"{where}.libraries", "expected an object")
+            else:
+                for name in sorted(libs):
+                    if libs[name] is not None and not isinstance(libs[name], str):
+                        self.bad(f"{where}.libraries.{name}", "expected a version string or null")
+        for i, t in enumerate(self.array(c.get("thirdParty", []), f"{where}.thirdParty")):
+            tw = f"{where}.thirdParty[{i}]"
+            if not self.obj(t, tw, THIRD_PARTY, ("component",)):
+                continue
+            ref = t.get("component")
+            if ref not in in_step:
+                self.bad(f"{tw}.component", f"{ref!r} names no component of this step")
+            elif ref not in self.origin_components:
+                self.bad(f"{tw}.component", f"component {ref!r} carries no codeOrigin")

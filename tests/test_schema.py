@@ -58,3 +58,23 @@ def test_schema_and_checks_both_reject_a_bad_code_origin(mutate):
     mutate(r)
     assert list(validator(r).iter_errors(r)) != []
     assert check_obj(r) != []
+
+
+def ctx_bad_precision(r): r["processStep"][1]["executionContext"]["precision"] = "float16"
+def ctx_bad_backend(r): r["processStep"][1]["executionContext"]["backend"]["name"] = "opencl"
+def ctx_unknown_key(r): r["processStep"][1]["executionContext"]["seed"] = 7
+def ctx_library_not_text(r): r["processStep"][1]["executionContext"]["libraries"]["numpy"] = 2
+def ctx_empty(r): r["processStep"][1]["executionContext"] = {}
+def ctx_in_0_1(r): r["gprv"] = "0.1"
+
+
+@pytest.mark.parametrize("mutate", [ctx_bad_precision, ctx_bad_backend, ctx_unknown_key, ctx_library_not_text,
+                                    ctx_empty, ctx_in_0_1])
+def test_schema_and_checks_both_reject_a_bad_execution_context(mutate):
+    from test_record import with_context
+
+    r = with_context(example("fbm_recon.tif.gprv"))
+    assert list(validator(r).iter_errors(r)) == [] and check_obj(r) == []
+    mutate(r)
+    assert list(validator(r).iter_errors(r)) != []
+    assert check_obj(r) != []

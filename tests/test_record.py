@@ -257,3 +257,66 @@ def test_migrate_adds_nothing_it_cannot_derive(child):
     out = migrate(child)
     assert out["gprv"] == "0.2" and all("codeOrigin" not in st for st in out["processStep"])
     assert migrate(out) == out                                # idempotent on a 0.2 record
+
+
+# --------------------------------------------------------------------------- 0.2: executionContext
+
+
+def context(**changes) -> dict:
+    c = {"precision": "float32",
+         "backend": {"name": "fftw", "version": "3.3.10", "planner": "FFTW_ESTIMATE", "binding": "pyfftw 0.14.0"},
+         "fallback": "mlx has no double FFT; using FFTW3 double",
+         "libraries": {"python": "3.12.7", "numpy": "2.1.3", "numba": "0.60.0", "mlx": None},
+         "platform": "macOS-14.5-arm64"}
+    for k, v in changes.items():
+        if v is None:
+            c.pop(k, None)
+        else:
+            c[k] = v
+    return c
+
+
+def with_context(child, ctx=None, step=1) -> dict:
+    """The child example as a 0.2 record, an execution context on step ``step`` (p2 by default)."""
+    child["gprv"] = "0.2"
+    child["processStep"][step]["executionContext"] = ctx if ctx is not None else context()
+    return child
+
+
+def test_a_0_2_step_with_an_execution_context_verifies(child):
+    assert check_obj(with_context(child)) == []
+
+
+def test_execution_context_is_unknown_in_a_0_1_record(child):
+    child["processStep"][1]["executionContext"] = context()
+    assert any("unknown key 'executionContext'" in p for p in check_obj(child))
+
+
+@pytest.mark.parametrize("changes, text", [
+    ({"precision": "float16"}, "unknown precision 'float16'"),
+    ({"backend": {"name": "opencl"}}, "unknown backend 'opencl'"),
+    ({"backend": {"version": "3.3.10"}}, "missing 'name'"),
+    ({"backend": {"name": "fftw", "flavour": "x"}}, "unknown key 'flavour'"),
+    ({"backend": {"name": "fftw", "version": 3}}, "expected a string or null"),
+    ({"libraries": ["numpy"]}, "libraries: expected an object"),
+    ({"libraries": {"numpy": 2}}, "libraries.numpy: expected a version string or null"),
+    ({"platform": 5}, "platform: expected a string"),
+    ({"seed": 7}, "unknown key 'seed'"),
+])
+def test_a_bad_execution_context_is_named(child, changes, text):
+    assert problems_mention(check_obj(with_context(child, context(**changes))), text)
+
+
+def test_an_empty_execution_context_is_reported(child):
+    assert problems_mention(check_obj(with_context(child, {})), "says nothing")
+
+
+def test_a_third_party_component_must_be_this_steps_and_carry_a_code_origin(child):
+    rec = with_context(child, context(thirdParty=[{"component": "lw_bank"}]))
+    assert problems_mention(check_obj(rec), "component 'lw_bank' carries no codeOrigin")
+    rec["processStep"][0]["processingInformation"]["algorithm"][0]["codeOrigin"] = origin(
+        kind="repository", source="git+https://github.com/MarioKartUltra/GeoDynamX@" + "6" * 40,
+        contentHash={"algorithm": "sha256", "covers": "none"}, license="GPL-2.0-or-later")
+    assert check_obj(rec) == []                       # p2 references lw_bank, which now carries one
+    rec["processStep"][1]["executionContext"]["thirdParty"] = [{"component": "nope"}]
+    assert problems_mention(check_obj(rec), "'nope' names no component of this step")
